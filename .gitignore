@@ -1,0 +1,30 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+.env
+*.db
+*.sqlite3
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.idea/
+.vscode/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Media uploads
+media/
+
+# Logs
+*.log
+*.err
+
+# Test artifacts
+test_*.py
