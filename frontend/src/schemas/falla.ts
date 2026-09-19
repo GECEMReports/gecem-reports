@@ -57,6 +57,34 @@ export interface Refaccion {
   moneda: string;
   proveedor: string | null;
   precio_confirmado: boolean;
+  editado_por_mecanico?: boolean;
   status: string;
   created_at: string;
+}
+
+export interface RefaccionSugerida {
+  nombre: string;
+  numero_parte?: string | null;
+  cantidad: number;
+  precio_estimado?: number | null;
+  moneda: string;
+  prioridad: string;
+  precio_confirmado: boolean;
+  editado_por_mecanico: boolean;
+}
+
+export interface SugerirRefaccionesResponse {
+  refacciones: RefaccionSugerida[];
+  notas: string;
+}
+
+export interface ConfirmarRefaccionItem {
+  nombre: string;
+  numero_parte?: string | null;
+  cantidad: number;
+  precio_unitario?: number | null;
+  moneda: string;
+  prioridad: string;
+  precio_confirmado: boolean;
+  editado_por_mecanico: boolean;
 }

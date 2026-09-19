@@ -13,6 +13,7 @@ import DiagnosisResultPage from '@/pages/DiagnosisResultPage';
 import FallaPage from '@/pages/FallaPage';
 import FallasPage from '@/pages/FallasPage';
 import FallaDetailPage from '@/pages/FallaDetailPage';
+import RefaccionesPage from '@/pages/RefaccionesPage';
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ export default function App() {
               <Route path="/falla" element={<FallaPage />} />
               <Route path="/fallas" element={<FallasPage />} />
               <Route path="/fallas/:id" element={<FallaDetailPage />} />
+              <Route path="/fallas/:id/refacciones" element={<RefaccionesPage />} />
             </Route>
           </Routes>
         </BrowserRouter>

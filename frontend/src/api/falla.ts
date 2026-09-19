@@ -4,6 +4,8 @@ import type {
   FallaCreate,
   FallaAgentResponse,
   Refaccion,
+  SugerirRefaccionesResponse,
+  ConfirmarRefaccionItem,
 } from '@/schemas/falla';
 
 export async function createFalla(data: FallaCreate): Promise<Falla> {
@@ -59,5 +61,23 @@ export async function createRefaccion(
 
 export async function listRefacciones(fallaId: string): Promise<Refaccion[]> {
   const res = await api.get<Refaccion[]>(`/fallas/${fallaId}/refacciones`);
+  return res.data;
+}
+
+export async function sugerirRefacciones(fallaId: string): Promise<SugerirRefaccionesResponse> {
+  const res = await api.post<SugerirRefaccionesResponse>('/ai/sugerir-refacciones', {
+    falla_id: fallaId,
+  }, { timeout: 180000 });
+  return res.data;
+}
+
+export async function confirmarRefacciones(
+  fallaId: string,
+  refacciones: ConfirmarRefaccionItem[]
+): Promise<{ message: string; count: number }> {
+  const res = await api.post('/ai/confirmar-refacciones', {
+    falla_id: fallaId,
+    refacciones,
+  });
   return res.data;
 }

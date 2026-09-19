@@ -54,6 +54,7 @@ class Refaccion(TenantScopedModel):
     moneda: Mapped[str] = mapped_column(String(5), default="MXN")
     proveedor: Mapped[str | None] = mapped_column(String(200), nullable=True)
     precio_confirmado: Mapped[bool] = mapped_column(default=False)  # True = del CSV, False = estimado por LLM
+    editado_por_mecanico: Mapped[bool] = mapped_column(default=False)  # True = mecánico cambió el precio antes de confirmar
     status: Mapped[str] = mapped_column(String(20), default="sugerida")  # sugerida, aprobada, comprada, utilizada
 
 

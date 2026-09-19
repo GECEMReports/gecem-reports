@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Camera,
   Package,
+  Sparkles,
   Truck,
   Check,
   Wrench,
@@ -236,7 +237,15 @@ export default function FallaDetailPage() {
         </CardHeader>
         <CardContent>
           {!refacciones || refacciones.length === 0 ? (
-            <p className="text-zinc-500 text-sm">No hay refacciones registradas</p>
+            <div className="text-center py-4">
+              <p className="text-zinc-500 text-sm mb-3">No hay refacciones registradas</p>
+              <Link to={`/fallas/${id}/refacciones`}>
+                <Button size="sm">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Sugerir con IA
+                </Button>
+              </Link>
+            </div>
           ) : (
             <div className="space-y-2">
               {refacciones.map((ref) => (
