@@ -1,0 +1,36 @@
+marca,modelo,parte,pieza,falla,solucion_propuesta,estatus
+CAT,375,Brazo de levante,Pernos sujetadores de brazo,"Pernos, sujecion de cilindro y mamelon con desgaste profundo. ","Aplicación de soldadura a sujecion de cilindro, maquinado con torno movil, compra de pernos nuevos.",En espera
+CAT,375,Brazo de Boom,Cilindro hidraulico,Fuga en retenes de tapa de cilindro.,Compra de sellos y empacado de tapa de cilindro.,En espera
+CAT,375,Motor,Marcha,Paso de aceite y diesel,Reposición de pieza,En espera
+CAT,375,Bote,Aguilon H,Fracturado de varias partes.,Fabricacion de pieza o reposisción.,En espera
+CAT,375,Bote,Dientes,Falta de dientes y desgaste de monturas,Reposición de dientes y revestimiento en monturas.,En espera
+CAT,375,Transito,Sprocket,Fuga de aceite en uno de los sprockets,Cambio de sello,En espera
+CAT,375,Brazo de Boom,Pernos sujetadores de brazo,"Pernos, sujecion de cilindro y mamelon con desgaste profundo. ","Aplicación de soldadura a sujecion de cilindro, maquinado con torno movil, compra de pernos nuevos.",Terminado
+CAT,375,Cabina,Clima,Falta de gas para aire acondicionado,Repuesto de cartucho,En espera
+CAT,375,Brazos y Cucharon,Lineas de lubricación,Lineas de lubricacion bloqueadas,Barrenar bujes e unstalar graseras diferentes medidas,En espera
+CAT,375,Brazo de Boom,Mangueras Hidraulicas,"Mangueras hidraulicas con poco tiempo de vida, estan infladas brida No 24",Reposicion de mangueras,En espera
+CAT,375,Motor,Filtros de aire,Filtros de aire ya no funcionan,Reposicion de filtros,En espera
+CAT,320CL,Bomba hidraulica,Bomba piloto,"Desgaste en la bomba piloto, ocasina perdida de presion y por ende perdida de fuerza la cargar el cucharón",Reposición de bomba piloto,En trabajo
+CAT,320CL,Cucharón,Dientes,"Sin dientes, desgaste de monturas",Reposición de dientes y revestimiento de monturas,En espera
+CAT,320CL,Cabina,Clima,Falta de aire acondicionado,Sin diagnostico,En espera
+CAT,320CL,Motor,Bandas,Se rompen bandas del alternado y compresor (2pzas),Reposición de piezas,En trabajo
+John Deere,450LC,Brazo del Boom,Cilindros de levante,Fuga excesiva en cilindros de levante del Boom,Cambio de sellos,En espera
+John Deere,450LC,Brazo de cucharon,Cilindros de levante,Fuga excesiva en cilindros de levante del brazo de cucharon,Cambio de sellos,En espera
+John Deere,450LC,Cucharon,Cilindro de arrastre,Fuga excesiva en cilindro de arrstre del bote,Cambio de sellos,En espera
+John Deere,450LC,Plato,Swing,No responde adecuadamente al momento de girar con el joystick,Sin diagnostico,En espera
+John Deere,450LC,Cucharon,Picos,"Falta de picos y desgaste de monturas, fracturas en el cucharon","Resposición de picos, revestimiento de monturas, refuerzos de placa en cucharon",En espera
+CASE,CX330,Plato,Swing,Perno de los satelites roto,Sustitucion de pieza,En espera
+CASE,CX330,Bomba hidraulica,Sin diagnostico,Pierde fuerza al momento de cargar el cucharon,Sin diagnostico,En espera
+CASE,CX330,Cucharon,Picos,Falta de picos,Reposición de piezas,En espera
+CAT,330,Motor,Cabeza,Se rompe sello y ocasiona fuga masiva de aceite,Repuesto de sello,En espera
+John Deere,624K II,Motor,Polea restiradora,Se rompe la polea que esta arriba del restirador,Reposción de pieza,Terminado
+John Deere,624K II,Cabina,Clima,Sin aire acondicioando,Reparar lineas de refirgeración,En espera
+John Deere,624K II,Neumaticos,Neumaticos,Bajas de aire,Diagnsoticar parte donde fuga aire,En espera
+John Deere,624K II,Cilindros hidraulicos,"Levante, direccion e inclinación",Fuga excesiva,Cambio de sellos,En espera
+John Deere,624K II,Motor,Filtros,Servicio urgente,Realizar servicio,En espera
+John Deere,824K II,Cilindro de bote,Tapa,Fuga excesiva de sellos de la tapa,Cambio de sellos,En trabajo
+John Deere,824K II,Brazos de bote,Pinlocks,Lineas de lubricación bloqueadas,Botar los pernos y diagnosticar,En espera
+John Deere,824K II,Cabina,Clima,Lineas de refrigeracion dañadas,Reposición de lineas,En espera
+John Deere,824K II,Brazos de bote,Cilindro de levante,Fuga aceite se afloja tapa de cilindro izquierdo,Ajustar cuando sea necesario,En espera
+John Deere,824K II,Motor,Filtros,Servicio urgente,Realizar servicio,En espera
+Allmand,9119,Motor,Marcha,Falla al encenderla,Reparació o reposicíon de pieza,En espera
