@@ -72,6 +72,7 @@ class RefaccionResponse(BaseModel):
     moneda: str
     proveedor: str | None
     precio_confirmado: bool
+    editado_por_mecanico: bool = False
     status: str
     created_at: datetime
 
