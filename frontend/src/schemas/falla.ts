@@ -65,6 +65,7 @@ export interface Refaccion {
 export interface RefaccionSugerida {
   nombre: string;
   numero_parte?: string | null;
+  pn_verificado?: boolean;
   cantidad: number;
   precio_estimado?: number | null;
   moneda: string;

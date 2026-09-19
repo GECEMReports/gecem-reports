@@ -13,6 +13,7 @@ class RefaccionSugerida(BaseModel):
     """Refacción sugerida para una reparación."""
     nombre: str = Field(description="Nombre de la refacción")
     numero_parte: str = Field(default="", description="Número de parte si se conoce")
+    pn_verificado: bool = Field(default=False, description="Siempre False - estimado por LLM, no verificado contra catálogo")
     cantidad: float = Field(description="Cantidad necesaria")
     precio_estimado: float = Field(description="Precio estimado en la moneda indicada")
     moneda: str = Field(description="Moneda: MXN, USD, etc.")
@@ -57,6 +58,9 @@ async def sugerir_refacciones(state: RefaccionesAgentState) -> dict:
             "4. Precio estimado de mercado (en la moneda que corresponda)\n"
             "5. Prioridad: urgente (sin esto no arranca), normal (necesario para la reparación), "
             "preventivo (recomendado mientras se tiene abierto)\n\n"
+            "IMPORTANTE: Los números de parte que generes son una referencia orientativa basada en "
+            "tu conocimiento general, NO una consulta a un catálogo real. Puede que no sean exactos. "
+            "Si no estás seguro del número de parte, deja el campo vacío.\n\n"
             "Sé realista con los precios. Si no estás seguro de un precio exacto, da un rango "
             "y pon el valor promedio. Responde en español."
         )),

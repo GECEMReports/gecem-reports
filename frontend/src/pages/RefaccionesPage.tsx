@@ -16,6 +16,7 @@ import {
   Plus,
   Trash2,
   Sparkles,
+  AlertTriangle,
 } from 'lucide-react';
 
 const prioridadConfig: Record<string, { label: string; color: string }> = {
@@ -296,7 +297,13 @@ export default function RefaccionesPage() {
                             )}
                           </div>
                           <div className="flex items-center gap-4 text-xs text-zinc-500">
-                            {ref.numero_parte && <span>P/N: {ref.numero_parte}</span>}
+                            {ref.numero_parte && (
+                              <div className="flex items-center gap-1">
+                                <span>P/N: {ref.numero_parte}</span>
+                                <AlertTriangle className="h-3 w-3 text-yellow-500 flex-shrink-0" />
+                                <span className="text-yellow-500 text-xs">Sugerido — verifica con proveedor</span>
+                              </div>
+                            )}
                             <span>x{ref.cantidad}</span>
                             <span>{ref.moneda}</span>
                           </div>

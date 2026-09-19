@@ -4,6 +4,7 @@ from pydantic import BaseModel
 class RefaccionSugerida(BaseModel):
     nombre: str
     numero_parte: str | None = None
+    pn_verificado: bool = False
     cantidad: float = 1
     precio_estimado: float | None = None
     moneda: str = "MXN"
