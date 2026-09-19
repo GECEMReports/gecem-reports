@@ -6,6 +6,7 @@ import type {
   Refaccion,
   SugerirRefaccionesResponse,
   ConfirmarRefaccionItem,
+  Cotizacion,
 } from '@/schemas/falla';
 
 export async function createFalla(data: FallaCreate): Promise<Falla> {
@@ -80,4 +81,33 @@ export async function confirmarRefacciones(
     refacciones,
   });
   return res.data;
+}
+
+export async function createCotizacionManual(data: {
+  falla_id: string;
+  subtotal_refacciones: number;
+  mano_de_obra: number;
+  moneda?: string;
+  notas?: string;
+}): Promise<Cotizacion> {
+  const res = await api.post<Cotizacion>('/cotizaciones/', {
+    ...data,
+    tipo: 'manual',
+  });
+  return res.data;
+}
+
+export async function listCotizaciones(fallaId?: string): Promise<Cotizacion[]> {
+  const params = fallaId ? { falla_id: fallaId } : {};
+  const res = await api.get<Cotizacion[]>('/cotizaciones/', { params });
+  return res.data;
+}
+
+export async function getCotizacion(id: string): Promise<Cotizacion> {
+  const res = await api.get<Cotizacion>(`/cotizaciones/${id}`);
+  return res.data;
+}
+
+export function getCotizacionPdfUrl(id: string): string {
+  return `/api/cotizaciones/${id}/pdf`;
 }

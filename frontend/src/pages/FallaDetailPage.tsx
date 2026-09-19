@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator';
 import {
   ArrowLeft,
   AlertTriangle,
+  Calculator,
   Camera,
   Package,
   Sparkles,
@@ -276,6 +277,12 @@ export default function FallaDetailPage() {
 
       {/* Actions */}
       <div className="flex gap-3">
+        <Link to={`/fallas/${id}/cotizacion`}>
+          <Button>
+            <Calculator className="h-4 w-4 mr-2" />
+            Cotizar
+          </Button>
+        </Link>
         <Link to="/fallas">
           <Button variant="outline">Volver a fallas</Button>
         </Link>

@@ -14,6 +14,8 @@ import FallaPage from '@/pages/FallaPage';
 import FallasPage from '@/pages/FallasPage';
 import FallaDetailPage from '@/pages/FallaDetailPage';
 import RefaccionesPage from '@/pages/RefaccionesPage';
+import CotizacionPage from '@/pages/CotizacionPage';
+import CotizacionDetailPage from '@/pages/CotizacionDetailPage';
 
 const queryClient = new QueryClient();
 
@@ -41,6 +43,8 @@ export default function App() {
               <Route path="/fallas" element={<FallasPage />} />
               <Route path="/fallas/:id" element={<FallaDetailPage />} />
               <Route path="/fallas/:id/refacciones" element={<RefaccionesPage />} />
+              <Route path="/fallas/:id/cotizacion" element={<CotizacionPage />} />
+              <Route path="/cotizaciones/:id" element={<CotizacionDetailPage />} />
             </Route>
           </Routes>
         </BrowserRouter>

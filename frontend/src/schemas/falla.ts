@@ -89,3 +89,26 @@ export interface ConfirmarRefaccionItem {
   precio_confirmado: boolean;
   editado_por_mecanico: boolean;
 }
+
+export interface Cotizacion {
+  id: string;
+  falla_id: string;
+  equipment_id: string;
+  tipo: string;
+  subtotal_refacciones: number;
+  mano_de_obra: number;
+  total: number;
+  moneda: string;
+  notas: string | null;
+  status: string;
+  created_at: string;
+}
+
+export interface CotizacionAgentResponse {
+  interrupted: boolean;
+  thread_id?: string | null;
+  pregunta?: string | null;
+  subtotal_refacciones?: number | null;
+  moneda?: string | null;
+  cotizacion?: Cotizacion | null;
+}
