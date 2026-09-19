@@ -28,3 +28,6 @@ media/
 
 # Test artifacts
 test_*.py
+
+# shadcn misconfiguration
+frontend/@/
