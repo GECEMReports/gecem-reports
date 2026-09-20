@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -36,6 +36,7 @@ async def create_cotizacion(req: CotizacionCreate, db: AsyncSession = Depends(ge
         raise HTTPException(404, "Falla not found")
 
     total = req.subtotal_refacciones + req.mano_de_obra
+    now = datetime.now(timezone.utc)
     cotizacion = Cotizacion(
         tenant_id=tenant_id,
         falla_id=uuid.UUID(req.falla_id),
@@ -46,6 +47,7 @@ async def create_cotizacion(req: CotizacionCreate, db: AsyncSession = Depends(ge
         total=total,
         moneda=req.moneda,
         notas=req.notas,
+        fecha_vencimiento=now + timedelta(days=30),
         status="borrador",
     )
     db.add(cotizacion)
@@ -146,6 +148,7 @@ async def download_cotizacion_pdf(cotizacion_id: uuid.UUID, token: str | None = 
         "moneda": cotizacion.moneda,
         "status": cotizacion.status,
         "notas": cotizacion.notas,
+        "fecha_vencimiento": cotizacion.fecha_vencimiento,
     }
     ref_list = [
         {

@@ -23,6 +23,7 @@ class CotizacionResponse(BaseModel):
     total: float
     moneda: str
     notas: str | None
+    fecha_vencimiento: datetime | None
     status: str
     created_at: datetime
 

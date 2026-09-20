@@ -100,6 +100,7 @@ export interface Cotizacion {
   total: number;
   moneda: string;
   notas: string | null;
+  fecha_vencimiento: string | null;
   status: string;
   created_at: string;
 }

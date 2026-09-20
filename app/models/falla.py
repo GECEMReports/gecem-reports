@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import DateTime, Float, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import UUID
@@ -73,6 +73,9 @@ class Cotizacion(TenantScopedModel):
     total: Mapped[float] = mapped_column(Float, default=0)
     moneda: Mapped[str] = mapped_column(String(5), default="MXN")
     notas: Mapped[str | None] = mapped_column(Text, nullable=True)
+    fecha_vencimiento: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     status: Mapped[str] = mapped_column(String(20), default="borrador")  # borrador, enviada, aprobada, rechazada
 
 

@@ -86,9 +86,16 @@ export default function CotizacionDetailPage() {
             </p>
           )}
         </div>
-        <Badge variant="outline" className={status.color}>
-          {status.label}
-        </Badge>
+        <div className="flex flex-col items-end gap-2">
+          <Badge variant="outline" className={status.color}>
+            {status.label}
+          </Badge>
+          {cotizacion.fecha_vencimiento && (
+            <p className="text-xs text-zinc-500">
+              Válida hasta: {new Date(cotizacion.fecha_vencimiento).toLocaleDateString('es-MX')}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Equipment */}
@@ -168,6 +175,10 @@ export default function CotizacionDetailPage() {
             <div className="flex justify-between text-sm">
               <p className="text-zinc-400">Mano de obra</p>
               <p className="text-white">${cotizacion.mano_de_obra.toLocaleString()} {cotizacion.moneda}</p>
+            </div>
+            <div className="flex justify-between text-sm">
+              <p className="text-zinc-400">IVA</p>
+              <p className="text-zinc-500">Incluido</p>
             </div>
             <div className="flex justify-between pt-2 border-t border-zinc-700">
               <p className="text-lg text-white font-medium">Total</p>
