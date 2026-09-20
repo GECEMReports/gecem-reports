@@ -116,11 +116,21 @@ export function getCotizacionPdfUrl(id: string): string {
 }
 
 // --- Reparaciones ---
-export async function createProcedimiento(fallaId: string, notas?: string): Promise<ProcedimientoReparacion> {
-  const res = await api.post<ProcedimientoReparacion>('/reparaciones/', {
-    falla_id: fallaId,
-    notas,
-  });
+export async function listReparaciones(equipmentId?: string): Promise<ProcedimientoReparacion[]> {
+  const params = equipmentId ? { equipment_id: equipmentId } : {};
+  const res = await api.get<ProcedimientoReparacion[]>('/reparaciones/', { params });
+  return res.data;
+}
+
+export async function createProcedimiento(data: {
+  equipment_id: string;
+  falla_id?: string;
+  cotizacion_id?: string;
+  descripcion?: string;
+  tipo?: string;
+  notas?: string;
+}): Promise<ProcedimientoReparacion> {
+  const res = await api.post<ProcedimientoReparacion>('/reparaciones/', data);
   return res.data;
 }
 

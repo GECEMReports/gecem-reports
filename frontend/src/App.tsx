@@ -17,6 +17,9 @@ import RefaccionesPage from '@/pages/RefaccionesPage';
 import CotizacionPage from '@/pages/CotizacionPage';
 import CotizacionDetailPage from '@/pages/CotizacionDetailPage';
 import ReparacionPage from '@/pages/ReparacionPage';
+import ReparacionesPage from '@/pages/ReparacionesPage';
+import ReparacionCreatePage from '@/pages/ReparacionCreatePage';
+import ReparacionDetailPage from '@/pages/ReparacionDetailPage';
 import ReporteClientePage from '@/pages/ReporteClientePage';
 
 const queryClient = new QueryClient();
@@ -47,7 +50,9 @@ export default function App() {
               <Route path="/fallas/:id/refacciones" element={<RefaccionesPage />} />
               <Route path="/fallas/:id/cotizacion" element={<CotizacionPage />} />
               <Route path="/cotizaciones/:id" element={<CotizacionDetailPage />} />
-              <Route path="/fallas/:id/reparacion" element={<ReparacionPage />} />
+              <Route path="/reparaciones" element={<ReparacionesPage />} />
+              <Route path="/reparaciones/new" element={<ReparacionCreatePage />} />
+              <Route path="/reparaciones/:id" element={<ReparacionDetailPage />} />
               <Route path="/fallas/:id/reporte" element={<ReporteClientePage />} />
             </Route>
           </Routes>

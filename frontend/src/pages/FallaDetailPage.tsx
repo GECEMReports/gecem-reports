@@ -278,14 +278,8 @@ export default function FallaDetailPage() {
 
       {/* Actions */}
       <div className="flex gap-3 flex-wrap">
-        <Link to={`/fallas/${id}/reparacion`}>
-          <Button>
-            <Wrench className="h-4 w-4 mr-2" />
-            Reparar
-          </Button>
-        </Link>
         <Link to={`/fallas/${id}/cotizacion`}>
-          <Button variant="outline">
+          <Button>
             <Calculator className="h-4 w-4 mr-2" />
             Cotizar
           </Button>

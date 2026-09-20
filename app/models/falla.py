@@ -82,8 +82,11 @@ class Cotizacion(TenantScopedModel):
 class ProcedimientoReparacion(TenantScopedModel):
     __tablename__ = "procedimientos_reparacion"
 
-    falla_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("fallas.id"), nullable=False, index=True
+    equipment_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("equipment.id"), nullable=False, index=True
+    )
+    falla_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("fallas.id"), nullable=True, index=True
     )
     cotizacion_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("cotizaciones.id"), nullable=True
@@ -91,6 +94,8 @@ class ProcedimientoReparacion(TenantScopedModel):
     mecanico_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
     )
+    descripcion: Mapped[str] = mapped_column(Text, nullable=False, default="")
+    tipo: Mapped[str] = mapped_column(String(30), default="correctiva")  # preventiva, correctiva, emergencia
     tiempo_total_horas: Mapped[float] = mapped_column(Float, default=0)
     notas: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="en_progreso")  # en_progreso, completado

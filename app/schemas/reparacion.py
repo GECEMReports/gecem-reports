@@ -31,16 +31,22 @@ class PasoFotoResponse(BaseModel):
 
 # --- Procedimiento Reparacion ---
 class ProcedimientoCreate(BaseModel):
-    falla_id: str
+    equipment_id: str
+    falla_id: str | None = None
     cotizacion_id: str | None = None
+    descripcion: str = ""
+    tipo: str = "correctiva"  # preventiva, correctiva, emergencia
     notas: str | None = None
 
 
 class ProcedimientoResponse(BaseModel):
     id: uuid.UUID
-    falla_id: uuid.UUID
+    equipment_id: uuid.UUID
+    falla_id: uuid.UUID | None
     cotizacion_id: uuid.UUID | None
     mecanico_id: uuid.UUID | None
+    descripcion: str
+    tipo: str
     tiempo_total_horas: float
     notas: str | None
     status: str

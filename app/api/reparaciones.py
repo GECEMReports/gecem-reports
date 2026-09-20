@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
+from app.models.equipment import Equipment
 from app.models.falla import (
     Falla,
     PasoFoto,
@@ -35,18 +36,32 @@ async def create_procedimiento(req: ProcedimientoCreate, db: AsyncSession = Depe
     if not tenant_id:
         raise HTTPException(400, "Tenant context required")
 
-    falla_uuid = uuid.UUID(req.falla_id)
-    result = await db.execute(
-        select(Falla).where(Falla.id == falla_uuid, Falla.tenant_id == tenant_id)
+    # Verify equipment belongs to tenant
+    equipment_uuid = uuid.UUID(req.equipment_id)
+    eq_result = await db.execute(
+        select(Equipment).where(Equipment.id == equipment_uuid, Equipment.tenant_id == tenant_id)
     )
-    falla = result.scalar_one_or_none()
-    if not falla:
-        raise HTTPException(404, "Falla not found")
+    equipment = eq_result.scalar_one_or_none()
+    if not equipment:
+        raise HTTPException(404, "Equipment not found")
+
+    # Verify falla if provided (optional for independent reparaciones)
+    falla_uuid = None
+    if req.falla_id:
+        falla_uuid = uuid.UUID(req.falla_id)
+        result = await db.execute(
+            select(Falla).where(Falla.id == falla_uuid, Falla.tenant_id == tenant_id)
+        )
+        if not result.scalar_one_or_none():
+            raise HTTPException(404, "Falla not found")
 
     proc = ProcedimientoReparacion(
         tenant_id=tenant_id,
+        equipment_id=equipment_uuid,
         falla_id=falla_uuid,
         cotizacion_id=uuid.UUID(req.cotizacion_id) if req.cotizacion_id else None,
+        descripcion=req.descripcion,
+        tipo=req.tipo,
         notas=req.notas,
     )
     db.add(proc)
@@ -60,6 +75,31 @@ async def create_procedimiento(req: ProcedimientoCreate, db: AsyncSession = Depe
         .options(selectinload(ProcedimientoReparacion.pasos).selectinload(PasoReparacion.fotos))
     )
     return result.scalar_one()
+
+
+@router.get("/", response_model=list[ProcedimientoResponse])
+async def list_procedimientos(
+    equipment_id: str | None = None,
+    falla_id: str | None = None,
+    db: AsyncSession = Depends(get_db),
+):
+    tenant_id = current_tenant_id.get()
+    if not tenant_id:
+        raise HTTPException(400, "Tenant context required")
+
+    query = (
+        select(ProcedimientoReparacion)
+        .where(ProcedimientoReparacion.tenant_id == tenant_id)
+        .options(selectinload(ProcedimientoReparacion.pasos).selectinload(PasoReparacion.fotos))
+    )
+    if equipment_id:
+        query = query.where(ProcedimientoReparacion.equipment_id == uuid.UUID(equipment_id))
+    if falla_id:
+        query = query.where(ProcedimientoReparacion.falla_id == uuid.UUID(falla_id))
+    query = query.order_by(ProcedimientoReparacion.created_at.desc())
+
+    result = await db.execute(query)
+    return result.scalars().all()
 
 
 @router.get("/{proc_id}", response_model=ProcedimientoResponse)

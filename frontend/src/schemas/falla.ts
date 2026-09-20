@@ -122,9 +122,12 @@ export interface PasoReparacion {
 
 export interface ProcedimientoReparacion {
   id: string;
-  falla_id: string;
+  equipment_id: string;
+  falla_id: string | null;
   cotizacion_id: string | null;
   mecanico_id: string | null;
+  descripcion: string;
+  tipo: string;
   tiempo_total_horas: number;
   notas: string | null;
   status: string;
