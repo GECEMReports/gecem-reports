@@ -1,4 +1,5 @@
 import asyncio
+import os
 import sys
 
 if sys.platform == "win32":
@@ -7,10 +8,11 @@ if sys.platform == "win32":
 import uvicorn
 from app.main import app
 
-
 if __name__ == "__main__":
-    print("Starting GECEM API", flush=True)
-    config = uvicorn.Config(app, host="127.0.0.1", port=8000, reload=False, log_level="info")
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", "8000"))
+    print(f"Starting GECEM API on {host}:{port}", flush=True)
+    config = uvicorn.Config(app, host=host, port=port, reload=False, log_level="info")
     server = uvicorn.Server(config)
     with asyncio.Runner(loop_factory=asyncio.SelectorEventLoop) as runner:
         runner.run(server.serve())
