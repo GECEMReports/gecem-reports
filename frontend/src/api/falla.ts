@@ -109,5 +109,6 @@ export async function getCotizacion(id: string): Promise<Cotizacion> {
 }
 
 export function getCotizacionPdfUrl(id: string): string {
-  return `/api/cotizaciones/${id}/pdf`;
+  const token = localStorage.getItem('token');
+  return `/api/cotizaciones/${id}/pdf?token=${token}`;
 }

@@ -85,8 +85,14 @@ async def get_cotizacion(cotizacion_id: uuid.UUID, db: AsyncSession = Depends(ge
 
 
 @router.get("/{cotizacion_id}/pdf")
-async def download_cotizacion_pdf(cotizacion_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def download_cotizacion_pdf(cotizacion_id: uuid.UUID, token: str | None = None, db: AsyncSession = Depends(get_db)):
+    # Resolve tenant from query param token or header
     tenant_id = current_tenant_id.get()
+    if not tenant_id and token:
+        from app.utils.auth import decode_access_token
+        payload = decode_access_token(token)
+        if payload and payload.get("tenant_id"):
+            tenant_id = uuid.UUID(payload["tenant_id"])
     if not tenant_id:
         raise HTTPException(400, "Tenant context required")
 
