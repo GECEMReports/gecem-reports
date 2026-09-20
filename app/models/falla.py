@@ -95,6 +95,8 @@ class ProcedimientoReparacion(TenantScopedModel):
     notas: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="en_progreso")  # en_progreso, completado
 
+    pasos = relationship("PasoReparacion", back_populates="procedimiento", cascade="all, delete-orphan")
+
 
 class PasoReparacion(TenantScopedModel):
     __tablename__ = "pasos_reparacion"
@@ -106,6 +108,9 @@ class PasoReparacion(TenantScopedModel):
     descripcion: Mapped[str] = mapped_column(Text, nullable=False)
     tiempo_minutos: Mapped[float] = mapped_column(Float, default=0)
 
+    procedimiento = relationship("ProcedimientoReparacion", back_populates="pasos")
+    fotos = relationship("PasoFoto", back_populates="paso", cascade="all, delete-orphan")
+
 
 class PasoFoto(TenantScopedModel):
     __tablename__ = "paso_fotos"
@@ -115,6 +120,8 @@ class PasoFoto(TenantScopedModel):
     )
     filename: Mapped[str] = mapped_column(String(500), nullable=False)
     filepath: Mapped[str] = mapped_column(String(1000), nullable=False)
+
+    paso = relationship("PasoReparacion", back_populates="fotos")
 
 
 class ReporteCliente(TenantScopedModel):

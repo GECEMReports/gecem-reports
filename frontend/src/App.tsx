@@ -16,6 +16,8 @@ import FallaDetailPage from '@/pages/FallaDetailPage';
 import RefaccionesPage from '@/pages/RefaccionesPage';
 import CotizacionPage from '@/pages/CotizacionPage';
 import CotizacionDetailPage from '@/pages/CotizacionDetailPage';
+import ReparacionPage from '@/pages/ReparacionPage';
+import ReporteClientePage from '@/pages/ReporteClientePage';
 
 const queryClient = new QueryClient();
 
@@ -45,6 +47,8 @@ export default function App() {
               <Route path="/fallas/:id/refacciones" element={<RefaccionesPage />} />
               <Route path="/fallas/:id/cotizacion" element={<CotizacionPage />} />
               <Route path="/cotizaciones/:id" element={<CotizacionDetailPage />} />
+              <Route path="/fallas/:id/reparacion" element={<ReparacionPage />} />
+              <Route path="/fallas/:id/reporte" element={<ReporteClientePage />} />
             </Route>
           </Routes>
         </BrowserRouter>

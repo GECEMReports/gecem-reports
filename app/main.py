@@ -9,6 +9,8 @@ from app.api.ai.diagnosis import router as diagnosis_router
 from app.api.ai.falla import router as falla_agent_router
 from app.api.ai.refacciones import router as refacciones_router
 from app.api.cotizaciones import router as cotizaciones_router
+from app.api.reparaciones import router as reparaciones_router
+from app.api.reportes import router as reportes_router
 from app.api.fallas import router as fallas_router
 from app.agents.diagnosis_agent import configure_checkpointer
 from app.checkpoint import start_checkpointer, stop_checkpointer
@@ -52,6 +54,8 @@ app.include_router(diagnosis_router, prefix="/api")
 app.include_router(falla_agent_router, prefix="/api")
 app.include_router(refacciones_router, prefix="/api")
 app.include_router(cotizaciones_router, prefix="/api")
+app.include_router(reparaciones_router, prefix="/api")
+app.include_router(reportes_router, prefix="/api")
 app.include_router(fallas_router, prefix="/api")
 
 

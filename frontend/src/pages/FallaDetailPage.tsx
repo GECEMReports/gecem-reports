@@ -12,6 +12,7 @@ import {
   AlertTriangle,
   Calculator,
   Camera,
+  FileText,
   Package,
   Sparkles,
   Truck,
@@ -276,15 +277,27 @@ export default function FallaDetailPage() {
       </Card>
 
       {/* Actions */}
-      <div className="flex gap-3">
-        <Link to={`/fallas/${id}/cotizacion`}>
+      <div className="flex gap-3 flex-wrap">
+        <Link to={`/fallas/${id}/reparacion`}>
           <Button>
+            <Wrench className="h-4 w-4 mr-2" />
+            Reparar
+          </Button>
+        </Link>
+        <Link to={`/fallas/${id}/cotizacion`}>
+          <Button variant="outline">
             <Calculator className="h-4 w-4 mr-2" />
             Cotizar
           </Button>
         </Link>
+        <Link to={`/fallas/${id}/reporte`}>
+          <Button variant="outline">
+            <FileText className="h-4 w-4 mr-2" />
+            Reporte cliente
+          </Button>
+        </Link>
         <Link to="/fallas">
-          <Button variant="outline">Volver a fallas</Button>
+          <Button variant="ghost">Volver a fallas</Button>
         </Link>
         <Link to={`/diagnosis`}>
           <Button variant="ghost">Nuevo diagnostico</Button>

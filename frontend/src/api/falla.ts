@@ -7,6 +7,8 @@ import type {
   SugerirRefaccionesResponse,
   ConfirmarRefaccionItem,
   Cotizacion,
+  ProcedimientoReparacion,
+  ReporteCliente,
 } from '@/schemas/falla';
 
 export async function createFalla(data: FallaCreate): Promise<Falla> {
@@ -111,4 +113,59 @@ export async function getCotizacion(id: string): Promise<Cotizacion> {
 export function getCotizacionPdfUrl(id: string): string {
   const token = localStorage.getItem('token');
   return `/api/cotizaciones/${id}/pdf?token=${token}`;
+}
+
+// --- Reparaciones ---
+export async function createProcedimiento(fallaId: string, notas?: string): Promise<ProcedimientoReparacion> {
+  const res = await api.post<ProcedimientoReparacion>('/reparaciones/', {
+    falla_id: fallaId,
+    notas,
+  });
+  return res.data;
+}
+
+export async function getProcedimiento(id: string): Promise<ProcedimientoReparacion> {
+  const res = await api.get<ProcedimientoReparacion>(`/reparaciones/${id}`);
+  return res.data;
+}
+
+export async function addPaso(procId: string, descripcion: string, tiempoMinutos: number): Promise<any> {
+  const res = await api.post(`/reparaciones/${procId}/pasos`, {
+    descripcion,
+    tiempo_minutos: tiempoMinutos,
+  });
+  return res.data;
+}
+
+export async function uploadPasoFoto(procId: string, pasoId: string, file: File): Promise<any> {
+  const formData = new FormData();
+  formData.append('file', file);
+  const res = await api.post(`/reparaciones/${procId}/pasos/${pasoId}/fotos`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return res.data;
+}
+
+export async function completarProcedimiento(procId: string, tiempoTotal: number, notas?: string): Promise<ProcedimientoReparacion> {
+  const res = await api.patch(`/reparaciones/${procId}/completar`, {
+    tiempo_total_horas: tiempoTotal,
+    notas,
+  });
+  return res.data;
+}
+
+// --- Reportes ---
+export async function generarReporte(fallaId: string): Promise<ReporteCliente> {
+  const res = await api.post<ReporteCliente>(`/reportes/generar/${fallaId}`, {}, { timeout: 180000 });
+  return res.data;
+}
+
+export async function getReporte(id: string): Promise<ReporteCliente> {
+  const res = await api.get<ReporteCliente>(`/reportes/${id}`);
+  return res.data;
+}
+
+export function getReportePdfUrl(id: string): string {
+  const token = localStorage.getItem('token');
+  return `/api/reportes/${id}/pdf?token=${token}`;
 }

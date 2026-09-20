@@ -105,6 +105,41 @@ export interface Cotizacion {
   created_at: string;
 }
 
+export interface PasoFoto {
+  id: string;
+  filename: string;
+  filepath: string;
+}
+
+export interface PasoReparacion {
+  id: string;
+  procedimiento_id: string;
+  numero_paso: number;
+  descripcion: string;
+  tiempo_minutos: number;
+  fotos: PasoFoto[];
+}
+
+export interface ProcedimientoReparacion {
+  id: string;
+  falla_id: string;
+  cotizacion_id: string | null;
+  mecanico_id: string | null;
+  tiempo_total_horas: number;
+  notas: string | null;
+  status: string;
+  created_at: string;
+  pasos: PasoReparacion[];
+}
+
+export interface ReporteCliente {
+  id: string;
+  falla_id: string;
+  contenido: string;
+  pdf_url: string | null;
+  fecha_generacion: string;
+}
+
 export interface CotizacionAgentResponse {
   interrupted: boolean;
   thread_id?: string | null;
