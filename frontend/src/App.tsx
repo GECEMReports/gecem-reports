@@ -16,7 +16,6 @@ import FallaDetailPage from '@/pages/FallaDetailPage';
 import RefaccionesPage from '@/pages/RefaccionesPage';
 import CotizacionPage from '@/pages/CotizacionPage';
 import CotizacionDetailPage from '@/pages/CotizacionDetailPage';
-import ReparacionPage from '@/pages/ReparacionPage';
 import ReparacionesPage from '@/pages/ReparacionesPage';
 import ReparacionCreatePage from '@/pages/ReparacionCreatePage';
 import ReparacionDetailPage from '@/pages/ReparacionDetailPage';

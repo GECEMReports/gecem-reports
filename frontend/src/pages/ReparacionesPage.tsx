@@ -2,12 +2,11 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { listReparaciones } from '@/api/falla';
-import { listEquipment } from '@/api/equipment';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Clock, Filter, Plus, Search, Wrench } from 'lucide-react';
+import { Clock, Plus, Search, Wrench } from 'lucide-react';
 
 const tipoConfig: Record<string, { label: string; color: string }> = {
   preventiva: { label: 'Preventiva', color: 'bg-green-500/20 text-green-400 border-green-500/30' },

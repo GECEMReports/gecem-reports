@@ -2,7 +2,7 @@ import { Link, Outlet, useLocation } from 'react-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Wrench, LayoutDashboard, Truck, Stethoscope, AlertTriangle, WrenchIcon, LogOut } from 'lucide-react';
+import { Wrench, LayoutDashboard, Truck, Stethoscope, AlertTriangle, LogOut } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },

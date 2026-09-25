@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, Link } from 'react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { getProcedimiento, addPaso, uploadPasoFoto, completarProcedimiento } from '@/api/falla';
 import { listEquipment } from '@/api/equipment';
-import type { ProcedimientoReparacion } from '@/schemas/falla';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
