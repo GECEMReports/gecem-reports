@@ -15,8 +15,21 @@ _checkpointer: AsyncPostgresSaver | None = None
 def checkpoint_dsn() -> str:
     """Return the psycopg DSN required by AsyncPostgresSaver."""
     if settings.CHECKPOINT_DATABASE_URL:
-        return settings.CHECKPOINT_DATABASE_URL
-    return settings.DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://", 1)
+        dsn = settings.CHECKPOINT_DATABASE_URL
+    else:
+        dsn = settings.DATABASE_URL.replace("postgresql+asyncpg://", "postgresql://", 1)
+
+    if settings.CHECKPOINT_SSL:
+        if "sslmode" not in dsn:
+            dsn += "?sslmode=require"
+    else:
+        # Remove any existing sslmode if present
+        if "sslmode" in dsn:
+            import re
+            dsn = re.sub(r'[?&]sslmode=[^&]+', '', dsn)
+            dsn = dsn.rstrip('?&')
+
+    return dsn
 
 
 async def start_checkpointer() -> AsyncPostgresSaver:
