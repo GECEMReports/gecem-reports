@@ -1,0 +1,9 @@
+.venv/
+frontend/
+tests/
+.git/
+__pycache__/
+*.pyc
+.env
+.env.example
+node_modules/
