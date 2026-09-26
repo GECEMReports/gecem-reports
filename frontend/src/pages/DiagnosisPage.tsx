@@ -22,7 +22,7 @@ export default function DiagnosisPage() {
   const [threadId, setThreadId] = useState<string | null>(null);
 
   const { data: equipment } = useQuery({
-    queryKey: ['equipment'],
+    queryKey: ['equipment', 'list'],
     queryFn: listEquipment,
   });
 

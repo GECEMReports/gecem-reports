@@ -1,4 +1,4 @@
-import api from './client';
+import api, { getApiUrl } from './client';
 import type {
   Falla,
   FallaCreate,
@@ -112,7 +112,7 @@ export async function getCotizacion(id: string): Promise<Cotizacion> {
 
 export function getCotizacionPdfUrl(id: string): string {
   const token = localStorage.getItem('token');
-  return `/api/cotizaciones/${id}/pdf?token=${token}`;
+  return getApiUrl(`/api/cotizaciones/${id}/pdf?token=${token}`);
 }
 
 // --- Reparaciones ---
@@ -177,5 +177,5 @@ export async function getReporte(id: string): Promise<ReporteCliente> {
 
 export function getReportePdfUrl(id: string): string {
   const token = localStorage.getItem('token');
-  return `/api/reportes/${id}/pdf?token=${token}`;
+  return getApiUrl(`/api/reportes/${id}/pdf?token=${token}`);
 }

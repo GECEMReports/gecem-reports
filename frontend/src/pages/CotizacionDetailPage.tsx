@@ -38,13 +38,13 @@ export default function CotizacionDetailPage() {
   });
 
   const { data: equipment } = useQuery({
-    queryKey: ['equipment', cotizacion?.equipment_id],
+    queryKey: ['equipment', 'detail', cotizacion?.equipment_id],
     queryFn: () => getEquipment(cotizacion!.equipment_id),
     enabled: !!cotizacion?.equipment_id,
   });
 
   const { data: refacciones } = useQuery({
-    queryKey: ['refacciones', cotizacion?.falla_id],
+    queryKey: ['refacciones', 'list', cotizacion?.falla_id],
     queryFn: () => listRefacciones(cotizacion!.falla_id),
     enabled: !!cotizacion?.falla_id,
   });

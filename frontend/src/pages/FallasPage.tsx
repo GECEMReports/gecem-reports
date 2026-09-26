@@ -34,7 +34,7 @@ export default function FallasPage() {
   });
 
   const { data: equipment } = useQuery({
-    queryKey: ['equipment'],
+    queryKey: ['equipment', 'list'],
     queryFn: listEquipment,
   });
 

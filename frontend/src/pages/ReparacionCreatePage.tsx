@@ -18,7 +18,7 @@ export default function ReparacionCreatePage() {
   const [notas, setNotas] = useState('');
 
   const { data: equipment } = useQuery({
-    queryKey: ['equipment'],
+    queryKey: ['equipment', 'list'],
     queryFn: listEquipment,
   });
 

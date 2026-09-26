@@ -3,7 +3,11 @@ import type { Equipment, EquipmentCreate, EquipmentUpdate } from '@/schemas/equi
 
 export async function listEquipment(): Promise<Equipment[]> {
   const res = await api.get<Equipment[]>('/equipment/');
-  return res.data;
+  const data: unknown = res.data;
+  if (!Array.isArray(data)) {
+    throw new Error('Unexpected equipment API response');
+  }
+  return data as Equipment[];
 }
 
 export async function getEquipment(id: string): Promise<Equipment> {

@@ -35,9 +35,8 @@ export default function CotizacionPage() {
   });
 
   const { data: equipment } = useQuery({
-    queryKey: ['equipment', falla?.equipment_id],
-    queryFn: () => listEquipment(),
-    enabled: !!falla,
+    queryKey: ['equipment', 'list'],
+    queryFn: listEquipment,
   });
 
   const subtotalRefacciones = refacciones?.reduce(

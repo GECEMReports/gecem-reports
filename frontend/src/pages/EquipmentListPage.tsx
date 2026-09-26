@@ -32,15 +32,16 @@ export default function EquipmentListPage() {
   const [editForm, setEditForm] = useState<EquipmentUpdate>({});
 
   const { data: equipment, isLoading } = useQuery({
-    queryKey: ['equipment'],
+    queryKey: ['equipment', 'list'],
     queryFn: listEquipment,
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => api.delete(`/equipment/${id}`),
-    onSuccess: () => {
+    onSuccess: (_data, deletedId) => {
       setDeleteError(null);
-      queryClient.invalidateQueries({ queryKey: ['equipment'] });
+      queryClient.invalidateQueries({ queryKey: ['equipment', 'list'] });
+      queryClient.invalidateQueries({ queryKey: ['equipment', 'detail', deletedId] });
     },
     onError: (error: any) => {
       const msg = error?.response?.data?.detail || 'Error al eliminar equipo';
@@ -51,8 +52,9 @@ export default function EquipmentListPage() {
   const updateMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: EquipmentUpdate }) =>
       updateEquipment(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['equipment'] });
+    onSuccess: (_data, updated) => {
+      queryClient.invalidateQueries({ queryKey: ['equipment', 'list'] });
+      queryClient.invalidateQueries({ queryKey: ['equipment', 'detail', updated.id] });
       setEditOpen(false);
       setEditEquipment(null);
     },

@@ -29,7 +29,7 @@ export default function ReparacionesPage() {
   });
 
   const { data: equipment } = useQuery({
-    queryKey: ['equipment'],
+    queryKey: ['equipment', 'list'],
     queryFn: () => import('@/api/equipment').then(m => m.listEquipment()),
   });
 

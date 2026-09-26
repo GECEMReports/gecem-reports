@@ -44,7 +44,7 @@ export default function FallaPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const { data: equipment } = useQuery({
-    queryKey: ['equipment'],
+    queryKey: ['equipment', 'list'],
     queryFn: listEquipment,
   });
 

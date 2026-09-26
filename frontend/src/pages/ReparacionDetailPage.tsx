@@ -4,6 +4,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { getProcedimiento, addPaso, uploadPasoFoto, completarProcedimiento } from '@/api/falla';
 import { listEquipment } from '@/api/equipment';
 import { Button } from '@/components/ui/button';
+import { getApiUrl } from '@/api/client';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -42,7 +43,7 @@ export default function ReparacionDetailPage() {
   });
 
   const { data: equipment } = useQuery({
-    queryKey: ['equipment'],
+    queryKey: ['equipment', 'list'],
     queryFn: listEquipment,
   });
 
@@ -132,7 +133,7 @@ export default function ReparacionDetailPage() {
                   <div className="flex gap-2 mt-2">
                     {paso.fotos.map((foto) => (
                       <div key={foto.id} className="w-16 h-16 rounded bg-zinc-700 overflow-hidden">
-                        <img src={`/api/reparaciones/fotos/${foto.filename}`} alt="" className="w-full h-full object-cover"
+                        <img src={getApiUrl(`/api/reparaciones/fotos/${foto.filename}`)} alt="" className="w-full h-full object-cover"
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                       </div>
                     ))}

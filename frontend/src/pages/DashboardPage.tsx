@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
   const { data: equipment } = useQuery({
-    queryKey: ['equipment'],
+    queryKey: ['equipment', 'list'],
     queryFn: listEquipment,
   });
 

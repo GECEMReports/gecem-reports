@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router';
 import { getFalla, listRefacciones } from '@/api/falla';
 import { getEquipment } from '@/api/equipment';
-import api from '@/api/client';
+import api, { getApiUrl } from '@/api/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -50,7 +50,7 @@ export default function FallaDetailPage() {
   });
 
   const { data: equipment } = useQuery({
-    queryKey: ['equipment', falla?.equipment_id],
+    queryKey: ['equipment', 'detail', falla?.equipment_id],
     queryFn: () => getEquipment(falla!.equipment_id),
     enabled: !!falla?.equipment_id,
   });
@@ -215,7 +215,7 @@ export default function FallaDetailPage() {
                   className="aspect-square rounded-lg bg-zinc-800 overflow-hidden border border-zinc-700"
                 >
                   <img
-                    src={`/api/fallas/fotos/${foto.filename}`}
+                    src={getApiUrl(`/api/fallas/fotos/${foto.filename}`)}
                     alt={foto.descripcion || 'Foto de falla'}
                     className="w-full h-full object-cover"
                     onError={(e) => {
