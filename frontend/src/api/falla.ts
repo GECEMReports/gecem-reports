@@ -1,4 +1,4 @@
-import api, { getApiUrl } from './client';
+import api, { fetchPdf, openPdfInNewTab } from './client';
 import type {
   Falla,
   FallaCreate,
@@ -110,9 +110,9 @@ export async function getCotizacion(id: string): Promise<Cotizacion> {
   return res.data;
 }
 
-export function getCotizacionPdfUrl(id: string): string {
-  const token = localStorage.getItem('token');
-  return getApiUrl(`/api/cotizaciones/${id}/pdf?token=${token}`);
+export async function downloadCotizacionPdf(id: string): Promise<void> {
+  const blob = await fetchPdf(`/cotizaciones/${id}/pdf`);
+  openPdfInNewTab(blob, `cotizacion-${id}.pdf`);
 }
 
 // --- Reparaciones ---
@@ -175,7 +175,7 @@ export async function getReporte(id: string): Promise<ReporteCliente> {
   return res.data;
 }
 
-export function getReportePdfUrl(id: string): string {
-  const token = localStorage.getItem('token');
-  return getApiUrl(`/api/reportes/${id}/pdf?token=${token}`);
+export async function downloadReportePdf(id: string): Promise<void> {
+  const blob = await fetchPdf(`/reportes/${id}/pdf`);
+  openPdfInNewTab(blob, `reporte-${id}.pdf`);
 }

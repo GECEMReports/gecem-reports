@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, Link } from 'react-router';
-import { getCotizacion, getCotizacionPdfUrl, listRefacciones } from '@/api/falla';
+import { getCotizacion, downloadCotizacionPdf, listRefacciones } from '@/api/falla';
 import { getEquipment } from '@/api/equipment';
 import { getFalla } from '@/api/falla';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ import {
   Calculator,
   Download,
   FileText,
+  Loader2,
   Package,
   Truck,
 } from 'lucide-react';
@@ -48,6 +50,22 @@ export default function CotizacionDetailPage() {
     queryFn: () => listRefacciones(cotizacion!.falla_id),
     enabled: !!cotizacion?.falla_id,
   });
+
+  const [pdfPending, setPdfPending] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+
+  async function handleDownloadPdf() {
+    if (!cotizacion) return;
+    setPdfError(null);
+    setPdfPending(true);
+    try {
+      await downloadCotizacionPdf(cotizacion.id);
+    } catch (error) {
+      setPdfError(error instanceof Error ? error.message : 'No se pudo descargar el PDF');
+    } finally {
+      setPdfPending(false);
+    }
+  }
 
   if (isLoading) {
     return <div className="text-zinc-400">Cargando cotizacion...</div>;
@@ -202,16 +220,23 @@ export default function CotizacionDetailPage() {
 
       {/* Actions */}
       <div className="flex gap-3">
-        <a href={getCotizacionPdfUrl(cotizacion.id)} target="_blank" rel="noopener noreferrer">
-          <Button>
+        <Button onClick={handleDownloadPdf} disabled={pdfPending}>
+          {pdfPending ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
             <Download className="h-4 w-4 mr-2" />
-            Descargar PDF
-          </Button>
-        </a>
+          )}
+          Descargar PDF
+        </Button>
         <Link to={`/fallas/${cotizacion.falla_id}`}>
           <Button variant="outline">Volver a falla</Button>
         </Link>
       </div>
+      {pdfError && (
+        <p className="text-sm text-red-400" role="alert">
+          {pdfError}
+        </p>
+      )}
     </div>
   );
 }

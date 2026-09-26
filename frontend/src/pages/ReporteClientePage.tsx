@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { getFalla, generarReporte, getReportePdfUrl } from '@/api/falla';
+import { getFalla, generarReporte, downloadReportePdf } from '@/api/falla';
 import type { ReporteCliente } from '@/schemas/falla';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,21 @@ import {
 export default function ReporteClientePage() {
   const { id: fallaId } = useParams<{ id: string }>();
   const [reporte, setReporte] = useState<ReporteCliente | null>(null);
+  const [pdfPending, setPdfPending] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
+
+  const handleDownloadPdf = async () => {
+    if (!reporte) return;
+    setPdfError(null);
+    setPdfPending(true);
+    try {
+      await downloadReportePdf(reporte.id);
+    } catch (error) {
+      setPdfError(error instanceof Error ? error.message : 'No se pudo descargar el PDF');
+    } finally {
+      setPdfPending(false);
+    }
+  };
 
   const { data: falla } = useQuery({
     queryKey: ['falla', fallaId],
@@ -112,16 +127,23 @@ export default function ReporteClientePage() {
 
           {/* Actions */}
           <div className="flex gap-3">
-            <a href={getReportePdfUrl(reporte.id)} target="_blank" rel="noopener noreferrer">
-              <Button>
+            <Button onClick={handleDownloadPdf} disabled={pdfPending}>
+              {pdfPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
                 <Download className="h-4 w-4 mr-2" />
-                Descargar PDF
-              </Button>
-            </a>
+              )}
+              Descargar PDF
+            </Button>
             <Link to={`/fallas/${fallaId}`}>
               <Button variant="outline">Volver a falla</Button>
             </Link>
           </div>
+          {pdfError && (
+            <p className="text-sm text-red-400" role="alert">
+              {pdfError}
+            </p>
+          )}
         </>
       )}
     </div>
