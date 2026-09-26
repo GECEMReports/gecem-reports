@@ -7,8 +7,8 @@ from langgraph.graph.message import add_messages
 from langgraph.types import Command, interrupt
 from pydantic import BaseModel, Field
 
-from app.agents.llm import get_llm, get_llm_structured
-from app.agents.tools import get_common_failures, search_equipment_history
+from app.core.llm import get_llm, get_llm_structured
+from app.modules.diagnosis.tools import get_common_failures, search_equipment_history
 
 DEMO_MODE = False
 

@@ -1,24 +1,28 @@
+"""Diagnosis domain service (thin).
+
+Encapsulates the `diagnose_equipment` business operation, moved verbatim
+from the former `app/api/ai/diagnosis.py` endpoint. No logic changes.
+
+TEMPORAL DEPENDENCY (documented): this service reads `app.models.equipment`
+directly to verify equipment ownership. It will be switched to the Equipment
+module's public service once Equipment is modularized. Equipment itself is
+NOT modularized in this stage.
+"""
+
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import HTTPException
 from langgraph.types import Command
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
-from app.models.equipment import Equipment
-from app.models.report import Report
-from app.schemas.diagnosis import DiagnosisRequest, DiagnosisResponse
+from app.models.equipment import Equipment  # TEMPORAL: ver docstring del modulo
+from app.modules.diagnosis.models import Report
+from app.modules.diagnosis.schemas import DiagnosisRequest, DiagnosisResponse
 from app.tenancy.middleware import current_tenant_id
 
-router = APIRouter(prefix="/ai", tags=["ai"])
 
-
-@router.post("/diagnose", response_model=DiagnosisResponse, response_model_exclude_none=True)
-async def diagnose_equipment(
-    req: DiagnosisRequest,
-    db: AsyncSession = Depends(get_db),
-):
+async def diagnose_equipment(req: DiagnosisRequest, db: AsyncSession) -> DiagnosisResponse:
     tenant_id = current_tenant_id.get()
     if not tenant_id:
         raise HTTPException(400, "Tenant context required")
@@ -34,7 +38,7 @@ async def diagnose_equipment(
     if not equipment:
         raise HTTPException(404, "Equipment not found")
 
-    from app.agents.diagnosis_agent import diagnosis_agent
+    from app.modules.diagnosis.agent import diagnosis_agent
 
     if diagnosis_agent is None:
         raise HTTPException(503, "Diagnosis agent is not initialized")

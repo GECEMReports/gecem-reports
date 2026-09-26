@@ -2,7 +2,7 @@ from app.models.base import Base, TenantModel, TenantScopedModel
 from app.models.user import User
 from app.models.equipment import Equipment
 from app.models.client import Client
-from app.models.report import Report
+from app.modules.diagnosis.models import Report
 from app.models.falla import (
     Falla,
     FallaFoto,

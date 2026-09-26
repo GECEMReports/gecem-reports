@@ -6,10 +6,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import async_session
-from app.models.equipment import Equipment
-from app.models.report import Report
+from app.models.equipment import Equipment  # TEMPORAL: hasta modularizar Equipment
+from app.modules.diagnosis.models import Report
 
-_CSV_PATH = Path(__file__).resolve().parent.parent / "data" / "fallas_historicas.csv"
+_CSV_PATH = Path(__file__).resolve().parent / "data" / "fallas_historicas.csv"
 
 
 def _load_failures_from_csv() -> list[dict]:

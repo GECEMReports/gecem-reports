@@ -6,7 +6,7 @@ from typing import Annotated, TypedDict
 
 from langgraph.graph.message import add_messages
 
-from app.agents.llm import get_llm_structured
+from app.core.llm import get_llm_structured
 
 
 # --- Structured output schemas ---

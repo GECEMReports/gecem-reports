@@ -12,15 +12,15 @@ import uuid
 import pytest
 from langgraph.types import Command
 
-import app.agents.diagnosis_agent as diagnosis_agent_module
-from app.agents.tools import (
+import app.modules.diagnosis.agent as diagnosis_agent_module
+from app.modules.diagnosis.tools import (
     _ALL_FAILURES,
     _load_failures_from_csv,
     get_common_failures,
     search_equipment_history,
 )
 from app.database import async_session
-from app.models.report import Report
+from app.modules.diagnosis.models import Report
 from sqlalchemy import select
 
 from conftest import tenant_headers

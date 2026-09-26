@@ -24,11 +24,11 @@ import httpx  # noqa: E402
 
 import app.models  # noqa: F401,E402  (registra todos los modelos en Base.metadata)
 import app.database as app_database  # noqa: E402
-import app.agents.tools as app_tools  # noqa: E402
+import app.modules.diagnosis.tools as app_tools  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.base import Base, TenantModel  # noqa: E402
 from app.models.equipment import Equipment  # noqa: E402
-from app.models.report import Report  # noqa: E402
+from app.modules.diagnosis.models import Report  # noqa: E402
 
 # NullPool: cada test de anyio corre en su propio event loop; un pool
 # persistente reutilizaria conexiones atadas al loop anterior
