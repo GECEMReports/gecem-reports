@@ -1,4 +1,4 @@
-"""ETAPA 0 — Congelar comportamiento del dominio Diagnosis.
+"""Infraestructura de tests aislada (ETAPA 0 Diagnosis + ETAPA 0 Equipment).
 
 Este conftest NO modifica codigo productivo. Solo redirige la aplicacion
 hacia una base de datos de pruebas aislada (gecem_reports_test) ANTES de
@@ -28,6 +28,17 @@ import app.modules.diagnosis.tools as app_tools  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.base import Base, TenantModel  # noqa: E402
 from app.models.equipment import Equipment  # noqa: E402
+from app.models.falla import (  # noqa: E402
+    Cotizacion,
+    Falla,
+    FallaFoto,
+    PasoFoto,
+    PasoReparacion,
+    ProcedimientoReparacion,
+    Refaccion,
+    ReporteCliente,
+)
+from app.models.user import User  # noqa: E402
 from app.modules.diagnosis.models import Report  # noqa: E402
 
 # NullPool: cada test de anyio corre en su propio event loop; un pool
@@ -60,19 +71,37 @@ def _dispose_engine():
     asyncio.run(engine.dispose())
 
 
+from sqlalchemy import delete  # noqa: E402
+
+
+async def _clear_all(session):
+    """Limpia todas las tablas de dominio en orden hijo->padre (respeta FKs)."""
+    for model in (
+        PasoFoto,
+        PasoReparacion,
+        ProcedimientoReparacion,
+        ReporteCliente,
+        Cotizacion,
+        Refaccion,
+        FallaFoto,
+        Falla,
+        Report,
+        Equipment,
+        User,
+        TenantModel,
+    ):
+        await session.execute(delete(model))
+    await session.commit()
+
+
 @pytest.fixture
 async def test_db():
-    """Crea tablas, limpia y siembra tenant + equipment. Limpia reports al salir."""
+    """Crea tablas, limpia y siembra tenant + equipment. Limpia todo al salir."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
     async with async_session() as session:
-        from sqlalchemy import delete
-
-        await session.execute(delete(Report))
-        await session.execute(delete(Equipment))
-        await session.execute(delete(TenantModel))
-        await session.commit()
+        await _clear_all(session)
 
         tenant = TenantModel(name="Tenant Test", slug=f"test-{uuid.uuid4().hex[:8]}")
         session.add(tenant)
@@ -103,12 +132,7 @@ async def test_db():
     yield data
 
     async with async_session() as session:
-        from sqlalchemy import delete
-
-        await session.execute(delete(Report))
-        await session.execute(delete(Equipment))
-        await session.execute(delete(TenantModel))
-        await session.commit()
+        await _clear_all(session)
 
 
 @pytest.fixture
