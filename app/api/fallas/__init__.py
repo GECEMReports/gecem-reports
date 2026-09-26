@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models.equipment import Equipment
 from app.models.falla import Falla, FallaFoto, Refaccion
+from app.modules.equipment.service import get_equipment_or_404
 from app.schemas.falla import (
     FallaCreate,
     FallaResponse,
@@ -36,15 +36,7 @@ async def create_falla(req: FallaCreate, db: AsyncSession = Depends(get_db)):
     diagnosis_uuid = uuid.UUID(req.diagnosis_id) if req.diagnosis_id else None
 
     # Verify equipment belongs to tenant
-    result = await db.execute(
-        select(Equipment).where(
-            Equipment.id == equipment_uuid,
-            Equipment.tenant_id == tenant_id,
-        )
-    )
-    equipment = result.scalar_one_or_none()
-    if not equipment:
-        raise HTTPException(404, "Equipment not found")
+    await get_equipment_or_404(db, equipment_uuid)
 
     falla = Falla(
         tenant_id=tenant_id,

@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import async_session
-from app.models.equipment import Equipment  # TEMPORAL: hasta modularizar Equipment
+from app.modules.equipment.models import Equipment  # TEMPORAL: hasta puerto de Equipment
 from app.modules.diagnosis.models import Report
 
 _CSV_PATH = Path(__file__).resolve().parent / "data" / "fallas_historicas.csv"

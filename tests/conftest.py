@@ -27,7 +27,7 @@ import app.database as app_database  # noqa: E402
 import app.modules.diagnosis.tools as app_tools  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.base import Base, TenantModel  # noqa: E402
-from app.models.equipment import Equipment  # noqa: E402
+from app.modules.equipment.models import Equipment  # noqa: E402
 from app.models.falla import (  # noqa: E402
     Cotizacion,
     Falla,

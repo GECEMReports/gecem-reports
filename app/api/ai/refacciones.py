@@ -6,8 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models.equipment import Equipment
 from app.models.falla import Falla, Refaccion
+from app.modules.equipment.service import get_equipment_or_404
 from app.schemas.refacciones import (
     ConfirmarRefaccionesRequest,
     SugerirRefaccionesRequest,
@@ -38,15 +38,7 @@ async def sugerir_refacciones(
         raise HTTPException(404, "Falla not found")
 
     # Get equipment
-    eq_result = await db.execute(
-        select(Equipment).where(
-            Equipment.id == falla.equipment_id,
-            Equipment.tenant_id == tenant_id,
-        )
-    )
-    equipment = eq_result.scalar_one_or_none()
-    if not equipment:
-        raise HTTPException(404, "Equipment not found")
+    equipment = await get_equipment_or_404(db, falla.equipment_id)
 
     # Run refacciones agent
     from app.agents.refacciones_agent import refacciones_agent

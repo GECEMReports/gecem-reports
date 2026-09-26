@@ -1,26 +1,66 @@
+"""Equipment domain service (thin).
+
+Encapsulates the Equipment operations, moved verbatim from the former
+`app/api/equipment.py` router. No logic changes.
+
+TEMPORAL DEPENDENCY (documented): `delete_equipment` reads `Falla` and
+`ProcedimientoReparacion` from `app.models.falla` for the delete guard.
+It will be switched to Failures/Repairs ports once those domains are
+modularized. Failures and Repairs themselves are NOT modularized here.
+"""
+
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select, func
+from fastapi import HTTPException
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.database import get_db
-from app.models.equipment import Equipment
-from app.models.falla import Falla, ProcedimientoReparacion
-from app.schemas.equipment import EquipmentCreate, EquipmentResponse, EquipmentUpdate
+from app.models.falla import Falla, ProcedimientoReparacion  # TEMPORAL: ver docstring
+from app.modules.equipment.models import Equipment
+from app.modules.equipment.schemas import (
+    EquipmentCreate,
+    EquipmentResponse,
+    EquipmentUpdate,
+)
 from app.tenancy.middleware import current_tenant_id
 
-router = APIRouter(prefix="/equipment", tags=["equipment"])
 
-
-@router.post("/", response_model=EquipmentResponse)
-async def create_equipment(
-    req: EquipmentCreate,
-    db: AsyncSession = Depends(get_db),
-):
+async def _require_tenant_id():
     tenant_id = current_tenant_id.get()
     if not tenant_id:
         raise HTTPException(400, "Tenant context required")
+    return tenant_id
+
+
+async def list_equipment(db: AsyncSession) -> list[Equipment]:
+    tenant_id = await _require_tenant_id()
+
+    result = await db.execute(
+        select(Equipment).where(Equipment.tenant_id == tenant_id)
+    )
+    return result.scalars().all()
+
+
+async def get_equipment(db: AsyncSession, equipment_id: uuid.UUID) -> Equipment | None:
+    tenant_id = current_tenant_id.get()
+    result = await db.execute(
+        select(Equipment).where(
+            Equipment.id == equipment_id,
+            Equipment.tenant_id == tenant_id,
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def get_equipment_or_404(db: AsyncSession, equipment_id: uuid.UUID) -> Equipment:
+    equipment = await get_equipment(db, equipment_id)
+    if not equipment:
+        raise HTTPException(404, "Equipment not found")
+    return equipment
+
+
+async def create_equipment(db: AsyncSession, req: EquipmentCreate) -> Equipment:
+    tenant_id = await _require_tenant_id()
 
     equipment = Equipment(
         tenant_id=tenant_id,
@@ -39,42 +79,10 @@ async def create_equipment(
     return equipment
 
 
-@router.get("/", response_model=list[EquipmentResponse])
-async def list_equipment(db: AsyncSession = Depends(get_db)):
-    tenant_id = current_tenant_id.get()
-    if not tenant_id:
-        raise HTTPException(400, "Tenant context required")
-
-    result = await db.execute(
-        select(Equipment).where(Equipment.tenant_id == tenant_id)
-    )
-    return result.scalars().all()
-
-
-@router.get("/{equipment_id}", response_model=EquipmentResponse)
-async def get_equipment(equipment_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    tenant_id = current_tenant_id.get()
-    result = await db.execute(
-        select(Equipment).where(
-            Equipment.id == equipment_id,
-            Equipment.tenant_id == tenant_id,
-        )
-    )
-    equipment = result.scalar_one_or_none()
-    if not equipment:
-        raise HTTPException(404, "Equipment not found")
-    return equipment
-
-
-@router.patch("/{equipment_id}", response_model=EquipmentResponse)
 async def update_equipment(
-    equipment_id: uuid.UUID,
-    req: EquipmentUpdate,
-    db: AsyncSession = Depends(get_db),
-):
-    tenant_id = current_tenant_id.get()
-    if not tenant_id:
-        raise HTTPException(400, "Tenant context required")
+    db: AsyncSession, equipment_id: uuid.UUID, req: EquipmentUpdate
+) -> Equipment:
+    tenant_id = await _require_tenant_id()
 
     result = await db.execute(
         select(Equipment).where(
@@ -107,11 +115,8 @@ async def update_equipment(
     return equipment
 
 
-@router.delete("/{equipment_id}")
-async def delete_equipment(equipment_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    tenant_id = current_tenant_id.get()
-    if not tenant_id:
-        raise HTTPException(400, "Tenant context required")
+async def delete_equipment(db: AsyncSession, equipment_id: uuid.UUID) -> dict:
+    tenant_id = await _require_tenant_id()
 
     result = await db.execute(
         select(Equipment).where(
@@ -143,3 +148,14 @@ async def delete_equipment(equipment_id: uuid.UUID, db: AsyncSession = Depends(g
     await db.delete(equipment)
     await db.commit()
     return {"message": "Equipo eliminado"}
+
+
+__all__ = [
+    "EquipmentResponse",
+    "create_equipment",
+    "delete_equipment",
+    "get_equipment",
+    "get_equipment_or_404",
+    "list_equipment",
+    "update_equipment",
+]

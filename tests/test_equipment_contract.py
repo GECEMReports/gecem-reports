@@ -20,7 +20,7 @@ import app.agents.reporte_agent as reporte_agent_module
 import app.modules.diagnosis.agent as diagnosis_agent_module
 from app.database import async_session
 from app.models.base import TenantModel
-from app.models.equipment import Equipment
+from app.modules.equipment.models import Equipment
 from app.models.falla import Falla, ProcedimientoReparacion
 
 from conftest import tenant_headers

@@ -3,22 +3,19 @@
 Encapsulates the `diagnose_equipment` business operation, moved verbatim
 from the former `app/api/ai/diagnosis.py` endpoint. No logic changes.
 
-TEMPORAL DEPENDENCY (documented): this service reads `app.models.equipment`
-directly to verify equipment ownership. It will be switched to the Equipment
-module's public service once Equipment is modularized. Equipment itself is
-NOT modularized in this stage.
+Equipment is consumed exclusively through the Equipment module's public
+service (`get_equipment_or_404`).
 """
 
 from uuid import uuid4
 
 from fastapi import HTTPException
 from langgraph.types import Command
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.equipment import Equipment  # TEMPORAL: ver docstring del modulo
 from app.modules.diagnosis.models import Report
 from app.modules.diagnosis.schemas import DiagnosisRequest, DiagnosisResponse
+from app.modules.equipment.service import get_equipment_or_404
 from app.tenancy.middleware import current_tenant_id
 
 
@@ -28,15 +25,7 @@ async def diagnose_equipment(req: DiagnosisRequest, db: AsyncSession) -> Diagnos
         raise HTTPException(400, "Tenant context required")
 
     # Verify equipment belongs to tenant
-    result = await db.execute(
-        select(Equipment).where(
-            Equipment.id == req.equipment_id,
-            Equipment.tenant_id == tenant_id,
-        )
-    )
-    equipment = result.scalar_one_or_none()
-    if not equipment:
-        raise HTTPException(404, "Equipment not found")
+    equipment = await get_equipment_or_404(db, req.equipment_id)
 
     from app.modules.diagnosis.agent import diagnosis_agent
 

@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models.equipment import Equipment
 from app.models.falla import Cotizacion, Falla, Refaccion
+from app.modules.equipment.service import get_equipment
 from app.schemas.cotizacion import (
     CotizacionAgentResponse,
     CotizacionCreate,
@@ -116,10 +116,7 @@ async def download_cotizacion_pdf(cotizacion_id: uuid.UUID, token: str | None = 
     falla = falla_result.scalar_one_or_none()
 
     # Get equipment
-    eq_result = await db.execute(
-        select(Equipment).where(Equipment.id == cotizacion.equipment_id, Equipment.tenant_id == tenant_id)
-    )
-    equipment = eq_result.scalar_one_or_none()
+    equipment = await get_equipment(db, cotizacion.equipment_id)
 
     # Get refacciones
     ref_result = await db.execute(

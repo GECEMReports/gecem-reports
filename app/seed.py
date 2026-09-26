@@ -4,7 +4,7 @@ import uuid
 from app.database import engine, async_session
 from app.models.base import Base, TenantModel
 from app.models.user import User
-from app.models.equipment import Equipment
+from app.modules.equipment.models import Equipment
 from app.models.client import Client
 from app.modules.diagnosis.models import Report
 from app.utils.auth import hash_password

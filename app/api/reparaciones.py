@@ -7,13 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models.equipment import Equipment
 from app.models.falla import (
     Falla,
     PasoFoto,
     PasoReparacion,
     ProcedimientoReparacion,
 )
+from app.modules.equipment.service import get_equipment_or_404
 from app.schemas.reparacion import (
     CompletarProcedimientoRequest,
     PasoCreate,
@@ -38,12 +38,7 @@ async def create_procedimiento(req: ProcedimientoCreate, db: AsyncSession = Depe
 
     # Verify equipment belongs to tenant
     equipment_uuid = uuid.UUID(req.equipment_id)
-    eq_result = await db.execute(
-        select(Equipment).where(Equipment.id == equipment_uuid, Equipment.tenant_id == tenant_id)
-    )
-    equipment = eq_result.scalar_one_or_none()
-    if not equipment:
-        raise HTTPException(404, "Equipment not found")
+    await get_equipment_or_404(db, equipment_uuid)
 
     # Verify falla if provided (optional for independent reparaciones)
     falla_uuid = None

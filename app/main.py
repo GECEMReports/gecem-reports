@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.auth import router as auth_router
-from app.api.equipment import router as equipment_router
+from app.modules.equipment.router import router as equipment_router
 from app.modules.diagnosis.router import router as diagnosis_router
 from app.api.ai.falla import router as falla_agent_router
 from app.api.ai.refacciones import router as refacciones_router

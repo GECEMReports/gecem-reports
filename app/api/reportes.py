@@ -8,7 +8,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models.equipment import Equipment
 from app.models.falla import (
     Falla,
     PasoFoto,
@@ -17,6 +16,7 @@ from app.models.falla import (
     Refaccion,
     ReporteCliente,
 )
+from app.modules.equipment.service import get_equipment
 from app.schemas.reparacion import ReporteClienteResponse
 from app.tenancy.middleware import current_tenant_id
 
@@ -38,10 +38,7 @@ async def generar_reporte(falla_id: uuid.UUID, db: AsyncSession = Depends(get_db
         raise HTTPException(404, "Falla not found")
 
     # Get equipment
-    eq_result = await db.execute(
-        select(Equipment).where(Equipment.id == falla.equipment_id, Equipment.tenant_id == tenant_id)
-    )
-    equipment = eq_result.scalar_one_or_none()
+    equipment = await get_equipment(db, falla.equipment_id)
 
     # Get refacciones
     ref_result = await db.execute(
@@ -187,10 +184,7 @@ async def download_reporte_pdf(reporte_id: uuid.UUID, token: str | None = None, 
     # Get equipment
     equipment = None
     if falla:
-        eq_result = await db.execute(
-            select(Equipment).where(Equipment.id == falla.equipment_id, Equipment.tenant_id == tenant_id)
-        )
-        equipment = eq_result.scalar_one_or_none()
+        equipment = await get_equipment(db, falla.equipment_id)
 
     # Get refacciones
     ref_result = await db.execute(

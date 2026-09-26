@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models.equipment import Equipment
+from app.modules.equipment.service import get_equipment_or_404
 from app.tenancy.middleware import current_tenant_id
 
 router = APIRouter(prefix="/ai", tags=["ai"])
@@ -29,15 +28,7 @@ async def estructurar_falla(req: FallaAgentRequest, db: AsyncSession = Depends(g
         raise HTTPException(400, "Tenant context required")
 
     # Verify equipment belongs to tenant
-    result = await db.execute(
-        select(Equipment).where(
-            Equipment.id == req.equipment_id,
-            Equipment.tenant_id == tenant_id,
-        )
-    )
-    equipment = result.scalar_one_or_none()
-    if not equipment:
-        raise HTTPException(404, "Equipment not found")
+    equipment = await get_equipment_or_404(db, req.equipment_id)
 
     # Run falla agent
     from app.agents.falla_agent import falla_agent
