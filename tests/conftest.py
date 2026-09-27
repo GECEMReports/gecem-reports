@@ -29,10 +29,12 @@ from app.main import app  # noqa: E402
 from app.models.base import Base, TenantModel  # noqa: E402
 from app.modules.equipment.models import Equipment  # noqa: E402
 from app.models.falla import (  # noqa: E402
+    ReporteCliente,
+)
+from app.modules.repairs.models import (  # noqa: E402
     PasoFoto,
     PasoReparacion,
     ProcedimientoReparacion,
-    ReporteCliente,
 )
 from app.modules.quotations.models import Cotizacion  # noqa: E402
 from app.modules.failures.models import Falla, FallaFoto  # noqa: E402

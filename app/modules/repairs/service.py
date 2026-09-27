@@ -1,37 +1,38 @@
+"""Repairs domain service (thin).
+
+Encapsulates the Reparaciones operations, moved verbatim from the former
+`app/api/reparaciones.py` router. No logic changes.
+
+Equipment and Failures are consumed exclusively through their public
+services (`get_equipment_or_404` / `get_falla_or_404`). `cotizacion_id`
+is stored without existence validation (DB FK enforces it), as before.
+"""
+
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import HTTPException, UploadFile
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.database import get_db
-from app.models.falla import (
-    PasoFoto,
-    PasoReparacion,
-    ProcedimientoReparacion,
-)
 from app.modules.equipment.service import get_equipment_or_404
-from app.modules.failures.models import Falla  # TEMPORAL: hasta puerto de Failures
-from app.schemas.reparacion import (
+from app.modules.failures.service import get_falla_or_404
+from app.modules.repairs.models import PasoFoto, PasoReparacion, ProcedimientoReparacion
+from app.modules.repairs.schemas import (
     CompletarProcedimientoRequest,
     PasoCreate,
-    PasoFotoResponse,
-    PasoResponse,
     ProcedimientoCreate,
-    ProcedimientoResponse,
 )
 from app.tenancy.middleware import current_tenant_id
 
-router = APIRouter(prefix="/reparaciones", tags=["reparaciones"])
-
-UPLOAD_DIR = Path(__file__).resolve().parent.parent / "media" / "pasos"
+UPLOAD_DIR = Path(__file__).resolve().parent.parent.parent / "media" / "pasos"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
-@router.post("/", response_model=ProcedimientoResponse)
-async def create_procedimiento(req: ProcedimientoCreate, db: AsyncSession = Depends(get_db)):
+async def create_procedimiento(
+    db: AsyncSession, req: ProcedimientoCreate
+) -> ProcedimientoReparacion:
     tenant_id = current_tenant_id.get()
     if not tenant_id:
         raise HTTPException(400, "Tenant context required")
@@ -44,11 +45,7 @@ async def create_procedimiento(req: ProcedimientoCreate, db: AsyncSession = Depe
     falla_uuid = None
     if req.falla_id:
         falla_uuid = uuid.UUID(req.falla_id)
-        result = await db.execute(
-            select(Falla).where(Falla.id == falla_uuid, Falla.tenant_id == tenant_id)
-        )
-        if not result.scalar_one_or_none():
-            raise HTTPException(404, "Falla not found")
+        await get_falla_or_404(db, falla_uuid)
 
     proc = ProcedimientoReparacion(
         tenant_id=tenant_id,
@@ -72,12 +69,11 @@ async def create_procedimiento(req: ProcedimientoCreate, db: AsyncSession = Depe
     return result.scalar_one()
 
 
-@router.get("/", response_model=list[ProcedimientoResponse])
 async def list_procedimientos(
+    db: AsyncSession,
     equipment_id: str | None = None,
     falla_id: str | None = None,
-    db: AsyncSession = Depends(get_db),
-):
+) -> list[ProcedimientoReparacion]:
     tenant_id = current_tenant_id.get()
     if not tenant_id:
         raise HTTPException(400, "Tenant context required")
@@ -97,22 +93,30 @@ async def list_procedimientos(
     return result.scalars().all()
 
 
-@router.get("/{proc_id}", response_model=ProcedimientoResponse)
-async def get_procedimiento(proc_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def get_procedimiento(
+    db: AsyncSession, proc_id: uuid.UUID
+) -> ProcedimientoReparacion | None:
     tenant_id = current_tenant_id.get()
     result = await db.execute(
         select(ProcedimientoReparacion)
         .where(ProcedimientoReparacion.id == proc_id, ProcedimientoReparacion.tenant_id == tenant_id)
         .options(selectinload(ProcedimientoReparacion.pasos).selectinload(PasoReparacion.fotos))
     )
-    proc = result.scalar_one_or_none()
+    return result.scalar_one_or_none()
+
+
+async def get_procedimiento_or_404(
+    db: AsyncSession, proc_id: uuid.UUID
+) -> ProcedimientoReparacion:
+    proc = await get_procedimiento(db, proc_id)
     if not proc:
         raise HTTPException(404, "Procedimiento not found")
     return proc
 
 
-@router.post("/{proc_id}/pasos", response_model=PasoResponse)
-async def add_paso(proc_id: uuid.UUID, req: PasoCreate, db: AsyncSession = Depends(get_db)):
+async def add_paso(
+    db: AsyncSession, proc_id: uuid.UUID, req: PasoCreate
+) -> PasoReparacion:
     tenant_id = current_tenant_id.get()
     if not tenant_id:
         raise HTTPException(400, "Tenant context required")
@@ -155,13 +159,9 @@ async def add_paso(proc_id: uuid.UUID, req: PasoCreate, db: AsyncSession = Depen
     return result.scalar_one()
 
 
-@router.post("/{proc_id}/pasos/{paso_id}/fotos", response_model=PasoFotoResponse)
-async def upload_paso_foto(
-    proc_id: uuid.UUID,
-    paso_id: uuid.UUID,
-    file: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db),
-):
+async def add_paso_foto(
+    db: AsyncSession, proc_id: uuid.UUID, paso_id: uuid.UUID, file: UploadFile
+) -> PasoFoto:
     tenant_id = current_tenant_id.get()
     if not tenant_id:
         raise HTTPException(400, "Tenant context required")
@@ -199,12 +199,9 @@ async def upload_paso_foto(
     return PasoFoto(id=foto.id, filename=filename, filepath=str(filepath))
 
 
-@router.patch("/{proc_id}/completar", response_model=ProcedimientoResponse)
-async def completar_procedimiento(
-    proc_id: uuid.UUID,
-    req: CompletarProcedimientoRequest,
-    db: AsyncSession = Depends(get_db),
-):
+async def complete_procedimiento(
+    db: AsyncSession, proc_id: uuid.UUID, req: CompletarProcedimientoRequest
+) -> ProcedimientoReparacion:
     tenant_id = current_tenant_id.get()
     result = await db.execute(
         select(ProcedimientoReparacion).where(
@@ -229,3 +226,14 @@ async def completar_procedimiento(
         .options(selectinload(ProcedimientoReparacion.pasos).selectinload(PasoReparacion.fotos))
     )
     return result.scalar_one()
+
+
+__all__ = [
+    "add_paso",
+    "add_paso_foto",
+    "complete_procedimiento",
+    "create_procedimiento",
+    "get_procedimiento",
+    "get_procedimiento_or_404",
+    "list_procedimientos",
+]

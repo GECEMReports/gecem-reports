@@ -32,7 +32,7 @@ from sqlalchemy.exc import MultipleResultsFound
 import app.agents.reporte_agent as reporte_agent_module
 from app.database import async_session
 from app.models.base import TenantModel
-from app.models.falla import PasoFoto, PasoReparacion, ProcedimientoReparacion
+from app.modules.repairs.models import PasoFoto, PasoReparacion, ProcedimientoReparacion
 from app.modules.equipment.models import Equipment
 
 from conftest import tenant_headers

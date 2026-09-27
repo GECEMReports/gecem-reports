@@ -4,10 +4,12 @@ from app.modules.equipment.models import Equipment
 from app.models.client import Client
 from app.modules.diagnosis.models import Report
 from app.models.falla import (
-    ProcedimientoReparacion,
-    PasoReparacion,
-    PasoFoto,
     ReporteCliente,
+)
+from app.modules.repairs.models import (
+    PasoFoto,
+    PasoReparacion,
+    ProcedimientoReparacion,
 )
 from app.modules.quotations.models import Cotizacion
 from app.modules.failures.models import Falla, FallaFoto

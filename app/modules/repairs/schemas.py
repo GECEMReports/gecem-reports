@@ -59,14 +59,3 @@ class ProcedimientoResponse(BaseModel):
 class CompletarProcedimientoRequest(BaseModel):
     tiempo_total_horas: float
     notas: str | None = None
-
-
-# --- Reporte Cliente ---
-class ReporteClienteResponse(BaseModel):
-    id: uuid.UUID
-    falla_id: uuid.UUID
-    contenido: str
-    pdf_url: str | None
-    fecha_generacion: datetime
-
-    model_config = {"from_attributes": True}

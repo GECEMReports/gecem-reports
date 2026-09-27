@@ -9,15 +9,17 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models.falla import (
+    ReporteCliente,
+)
+from app.modules.repairs.models import (
     PasoFoto,
     PasoReparacion,
     ProcedimientoReparacion,
-    ReporteCliente,
 )
 from app.modules.equipment.service import get_equipment
 from app.modules.failures.models import Falla  # TEMPORAL: hasta puerto de Failures
 from app.modules.parts.service import list_refacciones_for_falla
-from app.schemas.reparacion import ReporteClienteResponse
+from app.modules.reports.schemas import ReporteClienteResponse
 from app.tenancy.middleware import current_tenant_id
 
 router = APIRouter(prefix="/reportes", tags=["reportes"])
