@@ -10,15 +10,19 @@ Hallazgos congelados aqui (deuda documentada, NO corregida):
 - FallaUpdate NO tiene extra="forbid": campos desconocidos/id/
   tenant_id/equipment_id en PATCH se ignoran en silencio (200).
 - No hay transiciones de status: cualquier string se acepta.
+- `descripcion` de foto via multipart se pierde (None): el param es query.
 - GET /{id}/refacciones y fotos: solo existen POST fotos (sin GET).
 - Falla.diagnosis_id se almacena pero ningun endpoint lo lee.
+
+Nota ETAPA 0.5 (hotfix aplicado): PATCH devolvia HTTP 500 porque
+update_falla no precargaba `fotos`; ahora usa selectinload y responde 200.
+Solo cambio la serializacion; logica, tenant y payload intactos.
 """
 
 import os
 import uuid
 
 import pytest
-from fastapi.exceptions import ResponseValidationError
 from sqlalchemy import select
 
 import app.agents.falla_agent as falla_agent_module
@@ -229,70 +233,98 @@ async def test_get_falla_without_tenant_returns_404(client, test_db):
 
 
 # 4. PATCH falla ----------------------------------------------------------------------------
-# CONTRATO CRITICO CONGELADO: PATCH escribe en DB pero la respuesta falla
-# (update_falla no precarga `fotos` y FallaResponse la exige -> en prod:
-# HTTP 500 "Internal Server Error"). Verificado en servidor local real.
-# En tests ASGI la falla de serializacion emerge como ResponseValidationError.
-async def test_patch_falla_status_persists_despite_500(client, test_db):
+# HOTFIX ETAPA 0.5: update_falla precarga `fotos` (selectinload) -> HTTP 200
+# con FallaResponse completa. Solo cambia la serializacion; la logica de
+# actualizacion, tenant y payload quedan intactas.
+async def test_patch_falla_status(client, test_db):
     headers = tenant_headers(test_db["tenant_id"])
     created = await create_falla(client, headers, test_db["equipment_id"])
     fid = created.json()["id"]
 
-    with pytest.raises(ResponseValidationError):
-        await client.patch(
-            f"/api/fallas/{fid}", json={"status": "en_reparacion"}, headers=headers
-        )
-
-    body = (await client.get(f"/api/fallas/{fid}", headers=headers)).json()
+    res = await client.patch(
+        f"/api/fallas/{fid}", json={"status": "en_reparacion"}, headers=headers
+    )
+    assert res.status_code == 200, res.text
+    body = res.json()
+    assert set(body.keys()) == FALLA_RESPONSE_KEYS
     assert body["status"] == "en_reparacion"
-    assert body["parte"] == "Motor"
-    assert body["pieza"] == "Inyector"
+    assert body["fotos"] == []
+    assert body["id"] == fid
+    assert body["tenant_id"] == str(test_db["tenant_id"])
     assert body["equipment_id"] == str(test_db["equipment_id"])
 
+    persisted = (await client.get(f"/api/fallas/{fid}", headers=headers)).json()
+    assert persisted["status"] == "en_reparacion"
 
-async def test_patch_falla_partial_preserves_others_despite_500(client, test_db):
+
+async def test_patch_falla_partial_preserves_others(client, test_db):
     headers = tenant_headers(test_db["tenant_id"])
     created = await create_falla(client, headers, test_db["equipment_id"])
     fid = created.json()["id"]
 
-    with pytest.raises(ResponseValidationError):
-        await client.patch(
-            f"/api/fallas/{fid}",
-            json={"descripcion": "nueva descripcion", "prioridad": "urgente"},
-            headers=headers,
-        )
-
-    body = (await client.get(f"/api/fallas/{fid}", headers=headers)).json()
+    res = await client.patch(
+        f"/api/fallas/{fid}",
+        json={"descripcion": "nueva descripcion", "prioridad": "urgente"},
+        headers=headers,
+    )
+    assert res.status_code == 200, res.text
+    body = res.json()
     assert body["descripcion"] == "nueva descripcion"
     assert body["prioridad"] == "urgente"
     assert body["parte"] == "Motor"
     assert body["status"] == "detectada"
 
+    persisted = (await client.get(f"/api/fallas/{fid}", headers=headers)).json()
+    assert persisted["descripcion"] == "nueva descripcion"
+
 
 async def test_patch_falla_forbidden_and_unknown_fields_ignored(client, test_db):
-    # FallaUpdate sin extra="forbid": 200/500 por serializacion, pero los
-    # campos id/tenant_id/equipment_id/desconocidos jamas se escriben.
+    # FallaUpdate sin extra="forbid" (deuda preservada): 200, sin cambios.
     headers = tenant_headers(test_db["tenant_id"])
     created = await create_falla(client, headers, test_db["equipment_id"])
     fid = created.json()["id"]
     before = created.json()
 
-    with pytest.raises(ResponseValidationError):
-        await client.patch(
-            f"/api/fallas/{fid}",
-            json={
-                "equipment_id": str(uuid.uuid4()),
-                "tenant_id": str(uuid.uuid4()),
-                "id": str(uuid.uuid4()),
-                "campo_desconocido": "x",
-            },
-            headers=headers,
-        )
-
-    after = (await client.get(f"/api/fallas/{fid}", headers=headers)).json()
+    res = await client.patch(
+        f"/api/fallas/{fid}",
+        json={
+            "equipment_id": str(uuid.uuid4()),
+            "tenant_id": str(uuid.uuid4()),
+            "id": str(uuid.uuid4()),
+            "campo_desconocido": "x",
+        },
+        headers=headers,
+    )
+    assert res.status_code == 200, res.text
+    after = res.json()
     assert after["id"] == before["id"]
     assert after["tenant_id"] == before["tenant_id"]
     assert after["equipment_id"] == before["equipment_id"]
+
+
+async def test_patch_falla_serializes_fotos(client, test_db):
+    headers = tenant_headers(test_db["tenant_id"])
+    created = await create_falla(client, headers, test_db["equipment_id"])
+    fid = created.json()["id"]
+    await client.post(
+        f"/api/fallas/{fid}/fotos",
+        files={"file": ("foto.png", b"\x89PNG-fake-bytes", "image/png")},
+        headers=headers,
+    )
+
+    res = await client.patch(
+        f"/api/fallas/{fid}", json={"status": "en_reparacion"}, headers=headers
+    )
+    assert res.status_code == 200, res.text
+    assert len(res.json()["fotos"]) == 1
+    assert res.json()["fotos"][0]["filename"].endswith(".png")
+
+    async with async_session() as session:
+        for row in (
+            await session.execute(select(FallaFoto).where(FallaFoto.falla_id == uuid.UUID(fid)))
+        ).scalars().all():
+            if os.path.exists(row.filepath):
+                os.remove(row.filepath)
 
 
 async def test_patch_falla_without_tenant_returns_404(client, test_db):
@@ -596,11 +628,10 @@ async def test_consumers_use_falla(client, test_db, monkeypatch):
     )
     assert diag.status_code == 200
 
-    # PATCH status persiste aunque la respuesta falle (contrato 500 congelado)
-    with pytest.raises(ResponseValidationError):
-        await client.patch(
-            f"/api/fallas/{fid}", json={"status": "en_reparacion"}, headers=headers
-        )
+    # PATCH status devuelve 200 y no rompe a los consumidores
+    assert (await client.patch(
+        f"/api/fallas/{fid}", json={"status": "en_reparacion"}, headers=headers
+    )).status_code == 200
     assert (await client.get(f"/api/fallas/{fid}", headers=headers)).json()["status"] == "en_reparacion"
     assert (await client.get(
         f"/api/cotizaciones/{cot.json()['id']}", headers=headers)).status_code == 200

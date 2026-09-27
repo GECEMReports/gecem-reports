@@ -91,7 +91,9 @@ async def get_falla(falla_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
 async def update_falla(falla_id: uuid.UUID, req: FallaUpdate, db: AsyncSession = Depends(get_db)):
     tenant_id = current_tenant_id.get()
     result = await db.execute(
-        select(Falla).where(Falla.id == falla_id, Falla.tenant_id == tenant_id)
+        select(Falla)
+        .where(Falla.id == falla_id, Falla.tenant_id == tenant_id)
+        .options(selectinload(Falla.fotos))
     )
     falla = result.scalar_one_or_none()
     if not falla:
