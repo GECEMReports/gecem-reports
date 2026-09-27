@@ -6,13 +6,13 @@ from app.modules.diagnosis.models import Report
 from app.models.falla import (
     Falla,
     FallaFoto,
-    Refaccion,
     Cotizacion,
     ProcedimientoReparacion,
     PasoReparacion,
     PasoFoto,
     ReporteCliente,
 )
+from app.modules.parts.models import Refaccion
 
 __all__ = [
     "Base",

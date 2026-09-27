@@ -20,11 +20,11 @@ import uuid
 import pytest
 from sqlalchemy import select
 
-import app.agents.refacciones_agent as refacciones_agent_module
+import app.modules.parts.agent as refacciones_agent_module
 import app.agents.reporte_agent as reporte_agent_module
 from app.database import async_session
 from app.models.base import TenantModel
-from app.models.falla import Refaccion
+from app.modules.parts.models import Refaccion
 
 from conftest import tenant_headers
 

@@ -8,8 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models.falla import Cotizacion, Falla, Refaccion
+from app.models.falla import Cotizacion, Falla
 from app.modules.equipment.service import get_equipment
+from app.modules.parts.service import list_refacciones_for_falla
 from app.schemas.cotizacion import (
     CotizacionAgentResponse,
     CotizacionCreate,
@@ -119,10 +120,7 @@ async def download_cotizacion_pdf(cotizacion_id: uuid.UUID, token: str | None = 
     equipment = await get_equipment(db, cotizacion.equipment_id)
 
     # Get refacciones
-    ref_result = await db.execute(
-        select(Refaccion).where(Refaccion.falla_id == cotizacion.falla_id, Refaccion.tenant_id == tenant_id)
-    )
-    refacciones = ref_result.scalars().all()
+    refacciones = await list_refacciones_for_falla(db, cotizacion.falla_id)
 
     from app.utils.pdf import generar_cotizacion_pdf
 

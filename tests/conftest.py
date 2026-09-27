@@ -35,9 +35,9 @@ from app.models.falla import (  # noqa: E402
     PasoFoto,
     PasoReparacion,
     ProcedimientoReparacion,
-    Refaccion,
     ReporteCliente,
 )
+from app.modules.parts.models import Refaccion  # noqa: E402
 from app.models.user import User  # noqa: E402
 from app.modules.diagnosis.models import Report  # noqa: E402
 

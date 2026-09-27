@@ -8,14 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.database import get_db
-from app.models.falla import Falla, FallaFoto, Refaccion
+from app.models.falla import Falla, FallaFoto
 from app.modules.equipment.service import get_equipment_or_404
 from app.schemas.falla import (
     FallaCreate,
     FallaResponse,
     FallaUpdate,
-    RefaccionCreate,
-    RefaccionResponse,
 )
 from app.tenancy.middleware import current_tenant_id
 
@@ -148,48 +146,3 @@ async def upload_foto(
     await db.commit()
 
     return {"id": foto.id, "filename": filename, "message": "Foto subida"}
-
-
-# --- Refacciones ---
-@router.post("/{falla_id}/refacciones", response_model=RefaccionResponse)
-async def create_refaccion(
-    falla_id: uuid.UUID, req: RefaccionCreate, db: AsyncSession = Depends(get_db)
-):
-    tenant_id = current_tenant_id.get()
-    if not tenant_id:
-        raise HTTPException(400, "Tenant context required")
-
-    # Verify falla belongs to tenant
-    result = await db.execute(
-        select(Falla).where(Falla.id == falla_id, Falla.tenant_id == tenant_id)
-    )
-    falla = result.scalar_one_or_none()
-    if not falla:
-        raise HTTPException(404, "Falla not found")
-
-    refaccion = Refaccion(
-        tenant_id=tenant_id,
-        falla_id=falla_id,
-        nombre=req.nombre,
-        numero_parte=req.numero_parte,
-        cantidad=req.cantidad,
-        precio_unitario=req.precio_unitario,
-        moneda=req.moneda,
-        proveedor=req.proveedor,
-        precio_confirmado=req.precio_confirmado,
-    )
-    db.add(refaccion)
-    await db.commit()
-    await db.refresh(refaccion)
-    return refaccion
-
-
-@router.get("/{falla_id}/refacciones", response_model=list[RefaccionResponse])
-async def list_refacciones(falla_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
-    tenant_id = current_tenant_id.get()
-    result = await db.execute(
-        select(Refaccion)
-        .where(Refaccion.falla_id == falla_id, Refaccion.tenant_id == tenant_id)
-        .order_by(Refaccion.created_at.desc())
-    )
-    return result.scalars().all()

@@ -13,10 +13,10 @@ from app.models.falla import (
     PasoFoto,
     PasoReparacion,
     ProcedimientoReparacion,
-    Refaccion,
     ReporteCliente,
 )
 from app.modules.equipment.service import get_equipment
+from app.modules.parts.service import list_refacciones_for_falla
 from app.schemas.reparacion import ReporteClienteResponse
 from app.tenancy.middleware import current_tenant_id
 
@@ -41,10 +41,7 @@ async def generar_reporte(falla_id: uuid.UUID, db: AsyncSession = Depends(get_db
     equipment = await get_equipment(db, falla.equipment_id)
 
     # Get refacciones
-    ref_result = await db.execute(
-        select(Refaccion).where(Refaccion.falla_id == falla_id, Refaccion.tenant_id == tenant_id)
-    )
-    refacciones = ref_result.scalars().all()
+    refacciones = await list_refacciones_for_falla(db, falla_id)
 
     # Get procedimiento with pasos
     proc_result = await db.execute(
@@ -187,10 +184,7 @@ async def download_reporte_pdf(reporte_id: uuid.UUID, token: str | None = None, 
         equipment = await get_equipment(db, falla.equipment_id)
 
     # Get refacciones
-    ref_result = await db.execute(
-        select(Refaccion).where(Refaccion.falla_id == reporte.falla_id, Refaccion.tenant_id == tenant_id)
-    )
-    refacciones = ref_result.scalars().all()
+    refacciones = await list_refacciones_for_falla(db, reporte.falla_id)
 
     # Get pasos
     proc_result = await db.execute(
