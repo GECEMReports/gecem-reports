@@ -4,6 +4,18 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
+class FallaAgentRequest(BaseModel):
+    equipment_id: str
+    diagnostico_ia: str
+    descripcion_mecanico: str
+
+
+class FallaAgentResponse(BaseModel):
+    necesita_mas_info: bool
+    pregunta_seguimiento: str | None = None
+    falla_estructurada: dict | None = None
+
+
 class FallaFotoResponse(BaseModel):
     id: uuid.UUID
     filename: str

@@ -25,12 +25,12 @@ import uuid
 import pytest
 from sqlalchemy import select
 
-import app.agents.falla_agent as falla_agent_module
+import app.modules.failures.agent as falla_agent_module
 import app.agents.reporte_agent as reporte_agent_module
 import app.modules.diagnosis.agent as diagnosis_agent_module
 from app.database import async_session
 from app.models.base import TenantModel
-from app.models.falla import Falla, FallaFoto
+from app.modules.failures.models import Falla, FallaFoto
 from app.modules.diagnosis.models import Report
 
 from conftest import tenant_headers

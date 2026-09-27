@@ -4,14 +4,13 @@ from app.modules.equipment.models import Equipment
 from app.models.client import Client
 from app.modules.diagnosis.models import Report
 from app.models.falla import (
-    Falla,
-    FallaFoto,
     Cotizacion,
     ProcedimientoReparacion,
     PasoReparacion,
     PasoFoto,
     ReporteCliente,
 )
+from app.modules.failures.models import Falla, FallaFoto
 from app.modules.parts.models import Refaccion
 
 __all__ = [

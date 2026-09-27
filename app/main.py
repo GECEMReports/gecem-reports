@@ -6,13 +6,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.auth import router as auth_router
 from app.modules.equipment.router import router as equipment_router
 from app.modules.diagnosis.router import router as diagnosis_router
-from app.api.ai.falla import router as falla_agent_router
+from app.modules.failures.ai_router import router as falla_agent_router
 from app.modules.parts.ai_router import router as refacciones_router
 from app.modules.parts.router import router as parts_router
 from app.api.cotizaciones import router as cotizaciones_router
 from app.api.reparaciones import router as reparaciones_router
 from app.api.reportes import router as reportes_router
-from app.api.fallas import router as fallas_router
+from app.modules.failures.router import router as fallas_router
 from app.modules.diagnosis.agent import configure_checkpointer
 from app.checkpoint import start_checkpointer, stop_checkpointer
 from app.tenancy.middleware import TenantMiddleware

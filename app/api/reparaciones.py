@@ -8,12 +8,12 @@ from sqlalchemy.orm import selectinload
 
 from app.database import get_db
 from app.models.falla import (
-    Falla,
     PasoFoto,
     PasoReparacion,
     ProcedimientoReparacion,
 )
 from app.modules.equipment.service import get_equipment_or_404
+from app.modules.failures.models import Falla  # TEMPORAL: hasta puerto de Failures
 from app.schemas.reparacion import (
     CompletarProcedimientoRequest,
     PasoCreate,

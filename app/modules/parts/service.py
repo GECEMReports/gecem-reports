@@ -20,7 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.falla import Falla  # TEMPORAL: ver docstring del modulo
+from app.modules.failures.models import Falla  # TEMPORAL: ver docstring del modulo
 from app.modules.equipment.service import get_equipment_or_404
 from app.modules.parts.models import Refaccion
 from app.modules.parts.schemas import (

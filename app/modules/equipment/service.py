@@ -15,7 +15,8 @@ from fastapi import HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.falla import Falla, ProcedimientoReparacion  # TEMPORAL: ver docstring
+from app.models.falla import ProcedimientoReparacion  # TEMPORAL: ver docstring
+from app.modules.failures.models import Falla  # TEMPORAL: hasta puerto de Failures
 from app.modules.equipment.models import Equipment
 from app.modules.equipment.schemas import (
     EquipmentCreate,
