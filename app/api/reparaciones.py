@@ -145,7 +145,14 @@ async def add_paso(proc_id: uuid.UUID, req: PasoCreate, db: AsyncSession = Depen
     db.add(paso)
     await db.commit()
     await db.refresh(paso)
-    return paso
+
+    # Reload with fotos relationship for response serialization
+    result = await db.execute(
+        select(PasoReparacion)
+        .where(PasoReparacion.id == paso.id)
+        .options(selectinload(PasoReparacion.fotos))
+    )
+    return result.scalar_one()
 
 
 @router.post("/{proc_id}/pasos/{paso_id}/fotos", response_model=PasoFotoResponse)

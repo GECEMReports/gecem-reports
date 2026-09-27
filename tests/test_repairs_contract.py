@@ -16,13 +16,16 @@ Hallazgos congelados aqui (deuda documentada, NO corregida):
 - El modelo/DB permite N procedimientos por falla (sin unique);
   Reports asume <=1 y rompe con MultipleResultsFound (bug de Reports,
   reproducido aqui sin corregir).
+
+Nota ETAPA 0.5 (hotfix aplicado): POST /pasos devolvia HTTP 500 porque
+add_paso no precargaba `fotos`; ahora usa selectinload y responde 200.
+Solo cambia la serializacion; numeracion, tenant y persistencia intactos.
 """
 
 import os
 import uuid
 
 import pytest
-from fastapi.exceptions import ResponseValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import MultipleResultsFound
 
@@ -245,7 +248,7 @@ async def test_list_procedimientos_without_tenant_returns_400(client, test_db):
 async def test_get_own_procedimiento_with_pasos(client, test_db, falla_a):
     headers = tenant_headers(test_db["tenant_id"])
     proc = await create_procedimiento(client, headers, test_db["equipment_id"], falla_id=falla_a["id"])
-    await _add_paso_persisted(
+    await _add_paso(
         client, headers, proc.json()["id"],
         {"descripcion": "desarmar", "tiempo_minutos": 30},
     )
@@ -284,16 +287,15 @@ async def test_get_other_tenant_procedimiento_returns_404(client, test_db, tenan
 
 
 # 4. Agregar paso ----------------------------------------------------------------------------------------
-# HALLAZGO CRITICO CONGELADO: POST /pasos persiste el paso pero la
-# respuesta falla (add_paso no precarga `fotos` y PasoResponse la exige ->
-# HTTP 500 en prod, verificado en servidor local real). En tests ASGI emerge
-# como ResponseValidationError. La numeracion y pertenencia se verifican
-# por GET posterior.
-async def _add_paso_persisted(client, headers, pid, payload):
-    with pytest.raises(ResponseValidationError):
-        await client.post(
-            f"/api/reparaciones/{pid}/pasos", json=payload, headers=headers
-        )
+# HOTFIX ETAPA 0.5: add_paso recarga el paso con `fotos` (selectinload) ->
+# HTTP 200 con PasoResponse completo. Solo cambia la serializacion;
+# numeracion, tenant y persistencia quedan intactas.
+async def _add_paso(client, headers, pid, payload):
+    res = await client.post(
+        f"/api/reparaciones/{pid}/pasos", json=payload, headers=headers
+    )
+    assert res.status_code == 200, res.text
+    return res.json()
 
 
 async def test_add_pasos_numbered_sequentially(client, test_db, falla_a):
@@ -301,26 +303,54 @@ async def test_add_pasos_numbered_sequentially(client, test_db, falla_a):
     proc = await create_procedimiento(client, headers, test_db["equipment_id"])
     pid = proc.json()["id"]
 
-    await _add_paso_persisted(
+    first = await _add_paso(
         client, headers, pid, {"descripcion": "paso uno", "tiempo_minutos": 15}
     )
-    await _add_paso_persisted(client, headers, pid, {"descripcion": "paso dos"})
+    second = await _add_paso(client, headers, pid, {"descripcion": "paso dos"})
+    assert first["numero_paso"] == 1
+    assert second["numero_paso"] == 2
+    assert set(first.keys()) == PASO_RESPONSE_KEYS
+    assert first["procedimiento_id"] == pid
+    assert first["descripcion"] == "paso uno"
+    assert first["tiempo_minutos"] == 15
+    assert first["fotos"] == []
+    assert second["tiempo_minutos"] == 0
 
-    body = (await client.get(f"/api/reparaciones/{pid}", headers=headers)).json()
-    assert len(body["pasos"]) == 2
-    assert [p["numero_paso"] for p in body["pasos"]] == [1, 2]
-    assert set(body["pasos"][0].keys()) == PASO_RESPONSE_KEYS
-    assert body["pasos"][0]["procedimiento_id"] == pid
-    assert body["pasos"][0]["descripcion"] == "paso uno"
-    assert body["pasos"][0]["tiempo_minutos"] == 15
-    assert body["pasos"][1]["tiempo_minutos"] == 0
-    assert body["pasos"][0]["fotos"] == []
+    persisted = (await client.get(f"/api/reparaciones/{pid}", headers=headers)).json()
+    assert [p["numero_paso"] for p in persisted["pasos"]] == [1, 2]
 
     async with async_session() as session:
         result = await session.execute(
             select(PasoReparacion).where(PasoReparacion.procedimiento_id == uuid.UUID(pid))
         )
         assert len(result.scalars().all()) == 2
+
+
+async def test_add_paso_serializes_fotos(client, test_db, falla_a):
+    headers = tenant_headers(test_db["tenant_id"])
+    proc = await create_procedimiento(client, headers, test_db["equipment_id"])
+    pid = proc.json()["id"]
+    paso = await _add_paso(client, headers, pid, {"descripcion": "revisar"})
+    assert paso["fotos"] == []
+
+    foto = await client.post(
+        f"/api/reparaciones/{pid}/pasos/{paso['id']}/fotos",
+        files={"file": ("p.png", b"\x89PNG-fake", "image/png")},
+        headers=headers,
+    )
+    assert foto.status_code == 200
+
+    body = (await client.get(f"/api/reparaciones/{pid}", headers=headers)).json()
+    assert len(body["pasos"][0]["fotos"]) == 1
+    assert set(body["pasos"][0]["fotos"][0].keys()) == PASO_FOTO_RESPONSE_KEYS
+    assert body["pasos"][0]["fotos"][0]["filename"].endswith(".png")
+
+    async with async_session() as session:
+        for row in (
+            await session.execute(select(PasoFoto))
+        ).scalars().all():
+            if os.path.exists(row.filepath):
+                os.remove(row.filepath)
 
 
 async def test_add_paso_unknown_procedimiento_returns_404(client, test_db):
@@ -360,10 +390,7 @@ async def test_upload_paso_foto(client, test_db, falla_a):
     headers = tenant_headers(test_db["tenant_id"])
     proc = await create_procedimiento(client, headers, test_db["equipment_id"])
     pid = proc.json()["id"]
-    await _add_paso_persisted(client, headers, pid, {"descripcion": "revisar"})
-    paso_id = (
-        await client.get(f"/api/reparaciones/{pid}", headers=headers)
-    ).json()["pasos"][0]["id"]
+    paso_id = (await _add_paso(client, headers, pid, {"descripcion": "revisar"}))["id"]
 
     res = await client.post(
         f"/api/reparaciones/{pid}/pasos/{paso_id}/fotos",
@@ -403,10 +430,7 @@ async def test_upload_paso_foto_without_tenant_returns_400(client, test_db, fall
     headers = tenant_headers(test_db["tenant_id"])
     proc = await create_procedimiento(client, headers, test_db["equipment_id"])
     pid = proc.json()["id"]
-    await _add_paso_persisted(client, headers, pid, {"descripcion": "x"})
-    paso_id = (
-        await client.get(f"/api/reparaciones/{pid}", headers=headers)
-    ).json()["pasos"][0]["id"]
+    paso_id = (await _add_paso(client, headers, pid, {"descripcion": "x"}))["id"]
     res = await client.post(
         f"/api/reparaciones/{pid}/pasos/{paso_id}/fotos",
         files={"file": ("p.png", b"x", "image/png")},
@@ -486,7 +510,7 @@ async def test_relations_preserved(client, test_db, falla_a):
         client, headers, test_db["equipment_id"],
         falla_id=falla_a["id"], cotizacion_id=cot["id"],
     )
-    await _add_paso_persisted(client, headers, proc.json()["id"], {"descripcion": "x"})
+    await _add_paso(client, headers, proc.json()["id"], {"descripcion": "x"})
     paso_id = (
         await client.get(f"/api/reparaciones/{proc.json()['id']}", headers=headers)
     ).json()["pasos"][0]["id"]
