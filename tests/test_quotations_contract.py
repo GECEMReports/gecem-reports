@@ -29,7 +29,7 @@ from sqlalchemy import select
 
 from app.database import async_session
 from app.models.base import TenantModel
-from app.models.falla import Cotizacion
+from app.modules.quotations.models import Cotizacion
 from app.modules.equipment.models import Equipment
 
 from conftest import tenant_headers
