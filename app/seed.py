@@ -1,8 +1,8 @@
 import asyncio
 import uuid
 
-from app.database import engine, async_session
-from app.models.base import Base, TenantModel
+from app.database import async_session
+from app.models.base import TenantModel
 from app.models.user import User
 from app.modules.equipment.models import Equipment
 from app.models.client import Client
@@ -11,9 +11,8 @@ from app.utils.auth import hash_password
 
 
 async def seed():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-
+    # Solo siembra datos. El esquema lo administra Alembic:
+    #   alembic upgrade head
     async with async_session() as session:
         # Create test tenant
         tenant = TenantModel(name="Taller Demo", slug="demo", plan="free")
