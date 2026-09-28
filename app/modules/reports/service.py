@@ -1,32 +1,43 @@
-import uuid
-from pathlib import Path
+"""Reports domain service (thin).
 
-from fastapi import APIRouter, Depends, HTTPException
+Encapsulates the Reportes operations, moved verbatim from the former
+`app/api/reportes.py` router. No logic changes.
+
+Direct model reads (Falla, ProcedimientoReparacion, PasoReparacion,
+PasoFoto, ReporteCliente) are preserved as-is per ETAPA 1 scope; Equipment
+and Parts are consumed through their public services.
+
+DEUDA PRESERVADA (no corregir):
+- generar() construye el PDF pero lo descarta (pdf_buffer sin usar).
+- La query de procedimiento usa scalar_one_or_none() y rompe con
+  MultipleResultsFound si la falla tiene 2+ procedimientos (bug conocido).
+"""
+
+import uuid
+
+from fastapi import HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.database import get_db
 from app.models.falla import (
     ReporteCliente,
 )
-from app.modules.repairs.models import (
+from app.modules.equipment.service import get_equipment
+from app.modules.failures.models import Falla, FallaFoto  # TEMPORAL: ver docstring
+from app.modules.parts.service import list_refacciones_for_falla
+from app.modules.repairs.models import (  # TEMPORAL: ver docstring
     PasoFoto,
     PasoReparacion,
     ProcedimientoReparacion,
 )
-from app.modules.equipment.service import get_equipment
-from app.modules.failures.models import Falla  # TEMPORAL: hasta puerto de Failures
-from app.modules.parts.service import list_refacciones_for_falla
+from app.modules.reports.pdf import generar_reporte_cliente_pdf
 from app.modules.reports.schemas import ReporteClienteResponse
 from app.tenancy.middleware import current_tenant_id
 
-router = APIRouter(prefix="/reportes", tags=["reportes"])
 
-
-@router.post("/generar/{falla_id}", response_model=ReporteClienteResponse)
-async def generar_reporte(falla_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def generate_report(db: AsyncSession, falla_id: uuid.UUID) -> ReporteCliente:
     tenant_id = current_tenant_id.get()
     if not tenant_id:
         raise HTTPException(400, "Tenant context required")
@@ -92,9 +103,7 @@ async def generar_reporte(falla_id: uuid.UUID, db: AsyncSession = Depends(get_db
     final_state = await reporte_agent.ainvoke(initial_state)
     contenido = final_state.get("contenido", {})
 
-    # Generate PDF
-    from app.utils.reporte_pdf import generar_reporte_cliente_pdf
-
+    # Generate PDF (buffer discarded, as before)
     falla_dict = {
         "parte": falla.parte,
         "pieza": falla.pieza,
@@ -136,8 +145,7 @@ async def generar_reporte(falla_id: uuid.UUID, db: AsyncSession = Depends(get_db
     return reporte
 
 
-@router.get("/{reporte_id}", response_model=ReporteClienteResponse)
-async def get_reporte(reporte_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+async def get_report(db: AsyncSession, reporte_id: uuid.UUID) -> ReporteCliente | None:
     tenant_id = current_tenant_id.get()
     result = await db.execute(
         select(ReporteCliente).where(
@@ -145,14 +153,19 @@ async def get_reporte(reporte_id: uuid.UUID, db: AsyncSession = Depends(get_db))
             ReporteCliente.tenant_id == tenant_id,
         )
     )
-    reporte = result.scalar_one_or_none()
+    return result.scalar_one_or_none()
+
+
+async def get_report_or_404(db: AsyncSession, reporte_id: uuid.UUID) -> ReporteCliente:
+    reporte = await get_report(db, reporte_id)
     if not reporte:
         raise HTTPException(404, "Reporte not found")
     return reporte
 
 
-@router.get("/{reporte_id}/pdf")
-async def download_reporte_pdf(reporte_id: uuid.UUID, token: str | None = None, db: AsyncSession = Depends(get_db)):
+async def generate_report_pdf(
+    db: AsyncSession, reporte_id: uuid.UUID, token: str | None = None
+) -> StreamingResponse:
     # Resolve tenant
     tenant_id = current_tenant_id.get()
     if not tenant_id and token:
@@ -218,8 +231,6 @@ async def download_reporte_pdf(reporte_id: uuid.UUID, token: str | None = None, 
                 val = lines[1].strip() if len(lines) > 1 else ""
                 contenido[key] = val
 
-    from app.utils.reporte_pdf import generar_reporte_cliente_pdf
-
     falla_dict = {
         "parte": falla.parte if falla else "N/A",
         "pieza": falla.pieza if falla else "N/A",
@@ -244,3 +255,12 @@ async def download_reporte_pdf(reporte_id: uuid.UUID, token: str | None = None, 
         media_type="application/pdf",
         headers={"Content-Disposition": f'inline; filename="reporte-{reporte_id}.pdf"'},
     )
+
+
+__all__ = [
+    "ReporteClienteResponse",
+    "generate_report",
+    "generate_report_pdf",
+    "get_report",
+    "get_report_or_404",
+]
